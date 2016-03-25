@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">PokemonGame</string>
+    <string-array name="main_menu">
+        <item>Pokédex</item>
+        <item>Pokémon</item>
+        <item>Items</item>
+        <item>Save</item>
+        <item>Close</item>
+    </string-array>
+</resources>
