@@ -67,6 +67,9 @@ public class FightActivity extends AppCompatActivity implements FightListener{
 
     private int currentWildHp;
 
+    private int wildDamage;
+    private int myDamage;
+    private boolean criticalHit = false;
 
     private boolean myAttackDone = false;
     private boolean wildAttackDone = false;
@@ -75,6 +78,8 @@ public class FightActivity extends AppCompatActivity implements FightListener{
 
     private boolean wildIsAlive = true;
     private boolean youAreAlive = true;
+    private boolean myAnimationFinished = true;
+    private boolean wildAnimationFinished = true;
 
    // public static PokemonSprite wildPokemon;
 
@@ -106,13 +111,8 @@ public class FightActivity extends AppCompatActivity implements FightListener{
     protected void onStart() {
         super.onStart();
 
-        //viewFightFrame = (FrameLayout) findViewById(R.id.view_fight);
-        //FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 800);
-        //surfaceView = new FightSurfaceView(this);
-        //viewFightFrame.addView(surfaceView,lp);
         wildInfo = (TextView) findViewById(R.id.wild_info);
         setup();
-        loadFightInfo();
     }
 
     private void setup(){
@@ -136,7 +136,6 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         changeProgressBar(wildPokemon.getCurrentHP(), wildHP);
 
 
-
         myInfo = (TextView) findViewById(R.id.my_info);
         myInfo.setText(firstPokemon.getName().toUpperCase());
 
@@ -144,7 +143,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         lp3.leftMargin = 350;
         myInfoContainer.removeView(myInfo2);
         myInfo2.setText("Lv " + firstPokemon.getLevel());
-        myInfoContainer.addView(myInfo2,lp3);
+        myInfoContainer.addView(myInfo2, lp3);
 
         myHP = (ProgressBar) findViewById(R.id.my_hp);
         myHP.setMax(firstPokemon.getStats().getHp());
@@ -154,6 +153,8 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         lblMyCurrentHP.setText(myHP.getProgress()+" / "+myHP.getMax());
 
         myExp = (ProgressBar) findViewById(R.id.my_exp);
+        myExp.setProgress(0);
+        Rect bounds = myExp.getProgressDrawable().getBounds();
         Drawable drawable = ContextCompat.getDrawable(this, R.drawable.progressbar_full_experience);
         myExp.setProgressDrawable(drawable);
         int min = firstPokemon.getExperienceNeededForThisLevel();
@@ -162,6 +163,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         int current = firstPokemon.getCurrentExperience();
         int gainedThisLevel = current - min;
         int progress = (gainedThisLevel * 100) / toGainThisLevel;
+        myExp.getProgressDrawable().setBounds(bounds);
         myExp.setProgress(progress);       // 60% van de bar
 
         TextView action = new TextView(this);
@@ -169,9 +171,6 @@ public class FightActivity extends AppCompatActivity implements FightListener{
 
     }
 
-    private void loadFightInfo(){
-        //surfaceView.getmThread().getFightRenderable().animation();
-    }
 
     private void changeProgressBar(int newProgress, ProgressBar whoseHP){
         float progressPerc = newProgress*100/whoseHP.getMax()*1.0f;
@@ -190,7 +189,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
 
     private void startActions(){
 
-        Log.d("SHOWACTION","ShowActionButtons");
+        Log.d("VISIBILITY","startActions, VISIBLE");
 
         fightButtonContainer.setVisibility(View.VISIBLE);
         fightButtonContainer.removeAllViewsInLayout();
@@ -414,47 +413,56 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         int randomMove = r.nextInt(moves.size());
         Move selectedMove = moves.get(randomMove);
 
+        fightButtonContainer.setVisibility(View.INVISIBLE);
+        myAnimationFinished = false;
+        wildAnimationFinished = false;
+
+
         // instead of doing the attacks here, start the animations, which when they will end come back here and do the real damage
         if (currentMove.getPriority() > selectedMove.getPriority()) {       // first check the priority of the moves
-            surfaceView.getmThread().getFightRenderable().youAttacked(currentMove,firstPokemon);
-            int myDamage = calculateDamage(currentMove, firstPokemon, wildPokemon);
+            myDamage = calculateDamage(currentMove, firstPokemon, wildPokemon);
+            surfaceView.getmThread().getFightRenderable().youAttacked(currentMove,firstPokemon,criticalHit);
+            wildDamage = calculateDamage(selectedMove, wildPokemon, firstPokemon);
             didYouWin(wildHP.getProgress()-myDamage);
             if (wildIsAlive)
-                surfaceView.getmThread().getFightRenderable().wildAttacked(selectedMove, wildPokemon);
+                surfaceView.getmThread().getFightRenderable().wildAttacked(selectedMove, wildPokemon,criticalHit);
 
         }
         else {
             if (currentMove.getPriority() < selectedMove.getPriority()) {
-                surfaceView.getmThread().getFightRenderable().wildAttacked(selectedMove, wildPokemon);
-                int wildDamage = calculateDamage(selectedMove, wildPokemon, firstPokemon);
+                wildDamage = calculateDamage(selectedMove, wildPokemon, firstPokemon);
+                surfaceView.getmThread().getFightRenderable().wildAttacked(selectedMove, wildPokemon,criticalHit);
+                myDamage = calculateDamage(currentMove, firstPokemon, wildPokemon);
                 didYouLose(myHP.getProgress()-wildDamage);
                 if (youAreAlive)
-                    surfaceView.getmThread().getFightRenderable().youAttacked(currentMove, firstPokemon);
+                    surfaceView.getmThread().getFightRenderable().youAttacked(currentMove, firstPokemon,criticalHit);
             }
             else {
                 if (firstPokemon.getStats().getSpeed() >= wildPokemon.getStats().getSpeed()) {
-                    surfaceView.getmThread().getFightRenderable().youAttacked(currentMove, firstPokemon);
-                    int myDamage = calculateDamage(currentMove, firstPokemon, wildPokemon);
+                    myDamage = calculateDamage(currentMove, firstPokemon, wildPokemon);
+                    surfaceView.getmThread().getFightRenderable().youAttacked(currentMove, firstPokemon,criticalHit);
+                    wildDamage = calculateDamage(selectedMove, wildPokemon, firstPokemon);
                     didYouWin(wildHP.getProgress() - myDamage);
                     if (wildIsAlive)
-                        surfaceView.getmThread().getFightRenderable().wildAttacked(selectedMove, wildPokemon);
+                        surfaceView.getmThread().getFightRenderable().wildAttacked(selectedMove, wildPokemon,criticalHit);
 
                 }
                 else {
-                    surfaceView.getmThread().getFightRenderable().wildAttacked(selectedMove, wildPokemon);
-                    int wildDamage = calculateDamage(selectedMove, wildPokemon, firstPokemon);
+                    wildDamage = calculateDamage(selectedMove, wildPokemon, firstPokemon);
+                    surfaceView.getmThread().getFightRenderable().wildAttacked(selectedMove, wildPokemon,criticalHit);
+                    myDamage = calculateDamage(currentMove, firstPokemon, wildPokemon);
                     didYouLose(myHP.getProgress()-wildDamage);
                     if (youAreAlive)
-                        surfaceView.getmThread().getFightRenderable().youAttacked(currentMove,firstPokemon);
+                        surfaceView.getmThread().getFightRenderable().youAttacked(currentMove,firstPokemon,criticalHit);
                 }
             }
         }
-        startActions();
+        //startActions();
     }
 
     private void youAttack(Move myMove){
         //boolean targetIsAlive = true;
-        int myDamage = calculateDamage(myMove, firstPokemon, wildPokemon);
+        //int myDamage = calculateDamage(myMove, firstPokemon, wildPokemon);
 
         changeProgressBar(wildHP.getProgress() - myDamage, wildHP);
         myMove.setCurrentPp(myMove.getCurrentPp() - 1);
@@ -480,7 +488,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
     }
     private void wildAttacks(Move selectedMove) {
 
-        int wildDamage = calculateDamage(selectedMove, wildPokemon, firstPokemon);
+        //int wildDamage = calculateDamage(selectedMove, wildPokemon, firstPokemon);
 
         changeProgressBar(myHP.getProgress() - wildDamage, myHP);
         lblMyCurrentHP.setText(myHP.getProgress() + " / " + myHP.getMax());
@@ -507,7 +515,11 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         int randomNumber = r.nextInt(10001);
         if(randomNumber<=critChance*100){
             myDamage *= 2;
+            criticalHit = true;
         }
+        else
+            criticalHit = false;
+
         return myDamage;
     }
 
@@ -815,8 +827,13 @@ public class FightActivity extends AppCompatActivity implements FightListener{
                     @Override
                     public void onClick(View v) {
                         Utils.myItems.setAmountByName(itemName, -1);
+                        fightButtonContainer.setVisibility(View.INVISIBLE);
                         surfaceView.getmThread().getFightRenderable().throwPokeballToCatch(entry.getKey(), wildPokemon);
-                        startActions();
+                        ArrayList<Move> moves = wildPokemon.getLearnedMoves();
+                        int randomMove = r.nextInt(moves.size());
+                        Move selectedMove = moves.get(randomMove);
+                        wildDamage = calculateDamage(selectedMove, wildPokemon, firstPokemon);
+                        surfaceView.getmThread().getFightRenderable().wildAttacked(selectedMove, wildPokemon,criticalHit);
                     }
                 });
                 fightButtonContainer.addView(ballsCell, lp2);
@@ -896,6 +913,10 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         cell.addView(itemAmountLabel, lp4);
     }
     private void switchPokemon(PokemonSprite currentPokemon){
+        fightButtonContainer.removeAllViewsInLayout();
+        fightButtonContainer.setVisibility(View.INVISIBLE);
+        myAnimationFinished = false;
+
         Utils.myPokemons.setFirstPokemon(currentPokemon.getName());
         menuOpened = false;
         surfaceView.getmThread().getFightRenderable().changePokemon();
@@ -904,8 +925,9 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         ArrayList<Move> moves = wildPokemon.getLearnedMoves();
         int randomMove = r.nextInt(moves.size());
         Move selectedMove = moves.get(randomMove);
-        surfaceView.getmThread().getFightRenderable().wildAttacked(selectedMove, wildPokemon);
-        setup();
+        wildDamage = calculateDamage(selectedMove, wildPokemon, firstPokemon);
+        surfaceView.getmThread().getFightRenderable().wildAttacked(selectedMove, wildPokemon,criticalHit);
+
     }
 
     public void showActionButtons()
@@ -914,30 +936,40 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                Log.d("VISIBILITY","startActions called  in showActionButtons");
+                setup();
                 startActions();
             }
         });
     }
 
     public void myAttackAnimationIsDone(final Move myMove){
-        Log.d("ATTACKDONE", "My " + myMove.getName() + " is done");
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                //if(youAreAlive)
-                    youAttack(myMove);
+                youAttack(myMove);
+                myAnimationFinished = true;
+                if(wildAnimationFinished) {
+                    startActions();
+                }
+
             }
         });
     }
 
     public void wildAttackAnimationIsDone(final Move wildMove){
-        Log.d("ATTACKDONE", "Wild " + wildMove.getName() + " is done");
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                //if(wildIsAlive)
                 wildAttacks(wildMove);
+                wildAnimationFinished = true;
+                if(myAnimationFinished){
+                    startActions();
+                }
+
+
             }
         });
 
@@ -959,8 +991,22 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         finish();
     }
 
-    public void pokemonCaptured(){
+    public void pokemonCaptured(boolean captured){
+        if(captured){
+            Log.d("CAPTURED","captured");
+            Utils.myPokemons.addPokemon(wildPokemon);
+            finishBattle(-1);
+        }
 
+        else {
+            Log.d("CAPTURED", "Not captured");
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    startActions();
+                }
+            });
+        }
     }
 
 }

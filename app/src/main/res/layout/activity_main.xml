@@ -13,12 +13,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/main_layout">
-        <!--info.androidhive.gametest.GameSurfaceView
+        <info.androidhive.gametest.GameSurfaceView
             android:layout_width="match_parent"
             android:layout_height="350dp"
             android:id="@+id/view"
-            /-->
-        <LinearLayout
+            />
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_marginTop="230dp"
             android:layout_height="100dp"

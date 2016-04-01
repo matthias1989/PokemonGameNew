@@ -53,11 +53,13 @@ public class BuildingInsideForeground extends Foreground
 
     private int spriteHeight = 48;
     private int spriteWidth = 32;
-    private int spritePosX = steps*7+spriteWidth; // X = 5
+    private int spritePosX = steps*7+tileSize/2; // X = 5
     private int spritePosY = steps *7; // Y  = 0
 
     private float mFieldWidth;
     private float mFieldHeight;
+
+    private String buildingName;
 
 
     private String status;
@@ -68,6 +70,7 @@ public class BuildingInsideForeground extends Foreground
 
     public BuildingInsideForeground(int speed, SurfaceView view, String status, String buildingName)
     {
+        this.buildingName = buildingName;
         mParent = (GameSurfaceView) view;
         //mySprite = new Sprite(BitmapFactory.decodeResource(getResources(), R.drawable.front_standing), 100, 100);
         init();
@@ -139,7 +142,8 @@ public class BuildingInsideForeground extends Foreground
     public Sprite createSprite(int id){
         Bitmap a = BitmapFactory.decodeResource(mParent.getResources(), id);
         a = Bitmap.createScaledBitmap(a, tileSize, tileSize*3/2, false);
-        return new Sprite(a, spritePosX, spritePosY,spriteWidth,spriteHeight);
+        return new Sprite(a, spritePosX, spritePosY,tileSize,tileSize);
+        //return new Sprite(a, spritePosX, spritePosY,spriteWidth,spriteHeight);
     }
 
     @Override
@@ -170,7 +174,7 @@ public class BuildingInsideForeground extends Foreground
         int row = (pokecenterBackground.getScrollY() - pokecenterBackground.getStartPosY()+spritePosY - steps) / steps;
 
 
-        if (stepAllowed(row, col)) {
+        if (stepAllowed(0,-tileSize)) {
             pokecenterBackground.setScrollY(pokecenterBackground.getScrollY() - steps);
             pokecenterFirstLayer.setScrollY(pokecenterFirstLayer.getScrollY() - steps);
         }
@@ -199,8 +203,8 @@ public class BuildingInsideForeground extends Foreground
 
 
         boolean beforeDoor = false;
-        if (stepAllowed(row, col)) {
-            beforeDoor = isBeforeDoor(row, col);
+        if (stepAllowed(0, +tileSize)) {
+            beforeDoor = isBeforeDoor(0, +tileSize);
             pokecenterBackground.setScrollY(pokecenterBackground.getScrollY() + steps);
             pokecenterFirstLayer.setScrollY(pokecenterFirstLayer.getScrollY() + steps);
         }
@@ -231,7 +235,7 @@ public class BuildingInsideForeground extends Foreground
         int row = (pokecenterBackground.getScrollY() - pokecenterBackground.getStartPosY()+spritePosY) / steps;
 
 
-        if (stepAllowed(row, col)) {
+        if (stepAllowed(-tileSize, 0)) {
             pokecenterBackground.setScrollX(pokecenterBackground.getScrollX() - steps);
             pokecenterFirstLayer.setScrollX(pokecenterFirstLayer.getScrollX() - steps);
         }
@@ -264,7 +268,7 @@ public class BuildingInsideForeground extends Foreground
         int row = (pokecenterBackground.getScrollY() - pokecenterBackground.getStartPosY() + spritePosY) / steps;
 
 
-        if (stepAllowed(row, col)) {
+        if (stepAllowed(tileSize, 0)) {
             pokecenterBackground.setScrollX(pokecenterBackground.getScrollX() + steps);
             pokecenterFirstLayer.setScrollX(pokecenterFirstLayer.getScrollX() + steps);
         }
@@ -274,13 +278,15 @@ public class BuildingInsideForeground extends Foreground
 
     }
 
-    private boolean isBeforeDoor(int row, int col){
-        int doorPosInPokemonCenterX=tileSize*6+tileSize/2;
+    private boolean isBeforeDoor(int moveX, int moveY){
+        BuidingInsideBackground pokecenterBackground= (BuidingInsideBackground) mParent.getmThread().getBackground();
+        int doorPosInPokemonCenterX=tileSize*7+tileSize/2;
         int doorPosInPokemonCenterY=tileSize*9;
-        int x1 = - (col * steps - spritePosX) +doorPosInPokemonCenterX+spriteWidth;
+
+        int x1 = -pokecenterBackground.getScrollX() - moveX+doorPosInPokemonCenterX;
         int x2 = x1 + tileSize;
-        int y =  - (row * steps - spritePosY)+doorPosInPokemonCenterY;
-        Log.d("coords",x2+","+y);
+        int y =  -pokecenterBackground.getScrollY() - moveY+doorPosInPokemonCenterY;
+        Log.d("coords",x1+"->"+x2+","+y);
         Log.d("coords2",spritePosX+","+spritePosY);
         if( ((x1==spritePosX) || (x2==spritePosX)) && (y==spritePosY)){
             Log.d("CENTER","Enter the door");
@@ -294,26 +300,27 @@ public class BuildingInsideForeground extends Foreground
         //Log.d("ENTER", "Leaving the pokemon center...");
    }
 
-    public boolean stepAllowed(int row, int col){
-        BuidingInsideBackground pokecenterBackground= (BuidingInsideBackground) mParent.getmThread().getBackground();
-        int x1 =  - (col * steps - spritePosX -tileSize);
-        int y1 = - (row * steps - spritePosY - tileSize);
-        int x2 = x1 + (int) pokecenterBackground.getmFieldWidth() -1* tileSize;
-        int y2 = y1 + (int) pokecenterBackground.getmFieldHeight()-2*tileSize;
-//        Log.d("RECT","["+x1+","+x2+","+y1+","+y2+"] <-> ["+spritePosX+","+spritePosY+"]");
+    public boolean stepAllowed(int moveX, int moveY){
+        BuidingInsideBackground buidingInsideBackground= (BuidingInsideBackground) mParent.getmThread().getBackground();
+        int x1 = -buidingInsideBackground.getScrollX() - moveX +buidingInsideBackground.getStartPosX();
+        int y1 = -buidingInsideBackground.getScrollY() - moveY+buidingInsideBackground.getStartPosY()+tileSize;
+        int x2 = x1 + (int) buidingInsideBackground.getmFieldWidth();
+        int y2 = y1 + (int) buidingInsideBackground.getmFieldHeight()-tileSize;
+       Log.d("RECT","["+x1+","+x2+","+y1+","+y2+"] <-> ["+spritePosX+","+spritePosY+"]");
         Rect rect = new Rect(x1,y1,x2,y2);
-        if(!rect.intersect(spritePosX,spritePosY,spritePosX+spriteWidth,spritePosY+spriteHeight)){
+        if(!rect.intersect(spritePosX,spritePosY,spritePosX,spritePosY)){
             Log.d("CHECK","collision!");
-            if (isBeforeDoor(row,col))
+            //return false;
+            if (isBeforeDoor(moveX,moveY))
                 return true;
             else
                 return false;
         }
         else{               // between the borders of the pokecenter
-            x1 =  - (col * steps - spritePosX) + 5 *tileSize;               // balie
-            y1 = - (row * steps - spritePosY) + tileSize;
+            x1 =  -buidingInsideBackground.getScrollX() - moveX + 5 *tileSize;               // balie
+            y1 = -buidingInsideBackground.getScrollY() - moveY + 2* tileSize;
             x2 = x1 +  6 * tileSize;
-            y2 = y1 + 2 * tileSize;
+            y2 = y1 + 3 * tileSize;
 //            Log.d("RECT","["+x1+","+x2+","+y1+","+y2+"] <-> ["+spritePosX+","+spritePosY+"]");
             rect = new Rect(x1,y1,x2,y2);
             if(rect.intersect(spritePosX,spritePosY,spritePosX+spriteWidth,spritePosY+spriteHeight))
@@ -350,17 +357,17 @@ public class BuildingInsideForeground extends Foreground
         }
     }
     @Override
-    public boolean checkInteractionPossible() {
+    public String checkInteractionPossible() {
 
-        Sprite nurseJoy = mParent.getmThread().getFirstLayer().getSprites().get(0);
-        int nurseJoyPosX = nurseJoy.getX() - nurseJoy.getScrollX();
-        int nurseJoyPosY = nurseJoy.getY() - nurseJoy.getScrollY();
+        Sprite helper = mParent.getmThread().getFirstLayer().getSprites().get(0);
+        int helperPosX = helper.getX() - helper.getScrollX();
+        int helperPosY = helper.getY() - helper.getScrollY();
 
-        Log.d("INTERACTION","interaction? ["+nurseJoyPosX+","+nurseJoyPosY+"] => ["+spritePosX+","+spritePosY+"]");
-        if((nurseJoyPosX==spritePosX) && ((nurseJoyPosY+tileSize)==spritePosY) && getSprite().getStatus().startsWith("back")){
-            return true;
+        Log.d("INTERACTION","interaction? ["+helperPosX+","+helperPosY+"] => ["+spritePosX+","+spritePosY+"]");
+        if((helperPosX==spritePosX) && ((helperPosY+tileSize*2)==spritePosY) && getSprite().getStatus().startsWith("back")){
+            return buildingName;
         }
-        return false;
+        return "";
     }
 
     @Override

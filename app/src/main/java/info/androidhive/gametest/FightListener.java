@@ -10,5 +10,5 @@ public interface FightListener {
     void myAttackAnimationIsDone(Move myMove);
     void wildAttackAnimationIsDone(Move wildMove);
     void finishBattle(int gainedExperience);
-    void pokemonCaptured();
+    void pokemonCaptured(boolean captured);
 }

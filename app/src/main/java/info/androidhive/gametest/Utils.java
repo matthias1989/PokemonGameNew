@@ -33,6 +33,18 @@ public class Utils {
     public static Bitmap pokeball9;
     public static Bitmap pokeball10;
 
+    public static Bitmap pokeball11;
+    public static Bitmap pokeball12;
+    public static Bitmap pokeball13;
+    public static Bitmap pokeball14;
+    public static Bitmap pokeball15;
+    public static Bitmap pokeball16;
+    public static Bitmap pokeball17;
+    public static Bitmap pokeball18;
+    public static Bitmap pokeball19;
+    public static Bitmap pokeball20;
+    public static Bitmap pokeball21;
+
     public static Bitmap wallTile;
     public static Bitmap floorTile;
     public static Bitmap grassA;

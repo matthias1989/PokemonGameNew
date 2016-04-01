@@ -88,7 +88,7 @@ public class FightRenderThread extends Thread{
             }
             //if(FightRenderable.wildPokemonLoaded==false) {
                 try {
-                    sleep(30);
+                    sleep(40);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

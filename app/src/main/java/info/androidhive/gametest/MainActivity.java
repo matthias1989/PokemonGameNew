@@ -43,7 +43,7 @@ import info.androidhive.gametest.sprites.MyAdapter;
 public class MainActivity extends Activity
 {
 
-    private LinearLayout interactionContainer;
+    private RelativeLayout interactionContainer;
     private ListView menuList;
     private LinearLayout menuContainer;
     private RelativeLayout surfaceViewContainer;
@@ -53,6 +53,7 @@ public class MainActivity extends Activity
 
 
     private boolean menuOpened = false;
+    private boolean interactionStarted = false;
 
 
 
@@ -70,9 +71,10 @@ public class MainActivity extends Activity
     {
         super.onCreate(savedInstanceState);
 
-        DatabaseFileHandler.readData();
-        DatabaseFileHandler.readData2();
-        DatabaseFileHandler.readItemData();
+        DatabaseFileHandler.readData(this);
+        DatabaseFileHandler.readData2(this);
+        DatabaseFileHandler.readItemData(this);
+        //DatabaseFileHandler.readTest(this);
 
         PokemonSprite myPokemon = new PokemonSprite("charmander",DatabaseFileHandler.ds);       // pikachu lukt wel!!!
         myPokemon.setCurrentExperience(400);
@@ -99,16 +101,16 @@ public class MainActivity extends Activity
         myPokemon5.setCurrentHP(myPokemon5.getStats().getHp());
         Utils.myPokemons.addPokemon(myPokemon5);
 
-        PokemonSprite myPokemon6 = new PokemonSprite("mew",DatabaseFileHandler.ds);       // pikachu lukt wel!!!
-        myPokemon6.setCurrentExperience(300000);
-        myPokemon6.setCurrentHP(myPokemon6.getStats().getHp());
-        Utils.myPokemons.addPokemon(myPokemon6);
+//        PokemonSprite myPokemon6 = new PokemonSprite("mew",DatabaseFileHandler.ds);       // pikachu lukt wel!!!
+//        myPokemon6.setCurrentExperience(300000);
+//        myPokemon6.setCurrentHP(myPokemon6.getStats().getHp());
+//        Utils.myPokemons.addPokemon(myPokemon6);
 
 
         Utils.myItems = new MyItems();
         CustomItem item = new CustomItem("great-ball",DatabaseFileHandler.itemDs);
         //Log.d("POKEBALL","A "+item.getName()+" costs "+item.getCost() + " and is from category "+item.getCategoryName());
-        Utils.myItems.addItem(item, 5);
+        Utils.myItems.addItem(item, 50);
 
 
         Utils.scrollCoords = new HashMap<>();
@@ -125,8 +127,9 @@ public class MainActivity extends Activity
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, 1000);
         surfaceViewContainer = (RelativeLayout) findViewById(R.id.main_layout);
 
-        view = new GameSurfaceView(this);
-        surfaceViewContainer.addView(view,lp);
+        view = (GameSurfaceView) findViewById(R.id.view);
+        //view = new GameSurfaceView(this);
+        //surfaceViewContainer.addView(view,lp);
 
     }
 
@@ -149,7 +152,7 @@ public class MainActivity extends Activity
 
         }
 
-        interactionContainer = (LinearLayout) findViewById(R.id.interaction_container);
+        interactionContainer = (RelativeLayout) findViewById(R.id.interaction_container);
         menuContainer= (LinearLayout) findViewById(R.id.menu_container);
 
         btnUp = (Button) findViewById(R.id.up);
@@ -211,8 +214,16 @@ public class MainActivity extends Activity
         btnY.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(view.getmThread().getForeground().checkInteractionPossible())
-                    doInteraction();
+                String buildingName = view.getmThread().getForeground().checkInteractionPossible();
+                if(interactionStarted) {
+                    interactionContainer.removeAllViewsInLayout();
+                    interactionStarted = false;
+                }
+                else {
+                    if (!buildingName.equals(""))
+                        doInteraction(buildingName);
+                        interactionStarted = true;
+                }
             }
         });
 
@@ -320,6 +331,8 @@ public class MainActivity extends Activity
             {
                 String value = data.getStringExtra("FIGHT");
                 Log.d("FIGHT",value);
+                if(value.contains("caught"))
+                    Log.d("NEWPOKE",Utils.myPokemons.getMyPokemonByOrderNr(5).getName());
             }
             else if(resultCode == RESULT_CANCELED)
             {
@@ -348,17 +361,32 @@ public class MainActivity extends Activity
     }
 
 
-    private void doInteraction(){
+    private void doInteraction(String buildingName) {
         Log.d("INTERACTION", "interaction!!!");
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 150);
+
+        // interactioncontainer should be removed and instead a drawtext must come, the yes/no buttons (and the menu) can appear from here
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, 150);
         final TextView interaction = new TextView(this);
-        interaction.setText("Welcome to our PokéCenter\n Would you like me to heal your pokémon back to perfect health?");
         interaction.setGravity(Gravity.CENTER_HORIZONTAL);
-        //interaction.startAnimation();
         interaction.setTextColor(Color.BLACK);
         interaction.setBackgroundColor(Color.WHITE);
         interactionContainer.addView(interaction, lp);
 
+        if (buildingName.equals("pokecenter")) {
+            pokecenterInteraction(interaction);
+        }
+        else if(buildingName.equals("pokemarkt")){
+            Log.d("MARKT","Buy balls and stuff!");
+            pokemarktInteraction(interaction);
+        }
+    }
+
+    private void pokecenterInteraction(TextView interaction){
+        interaction.setText("Welcome to our PokéCenter\n Would you like me to heal your pokémon back to perfect health?");
+
+        RelativeLayout.LayoutParams lp2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, 150);
+        lp2.topMargin=130;
+        lp2.leftMargin = 100;
         LinearLayout dialogLayout = new LinearLayout(this);
         dialogLayout.setOrientation(LinearLayout.HORIZONTAL);
         Button btnYes = new Button(this);
@@ -370,12 +398,14 @@ public class MainActivity extends Activity
         btnNo.setBackgroundColor(Color.WHITE);
         dialogLayout.addView(btnNo);
         dialogLayout.setGravity(Gravity.CENTER_HORIZONTAL);
-        interactionContainer.addView(dialogLayout);
+        interactionContainer.addView(dialogLayout,lp2);
+
 
         btnNo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 interactionContainer.removeAllViewsInLayout();
+                interactionStarted = false;
             }
         });
 
@@ -383,20 +413,57 @@ public class MainActivity extends Activity
             @Override
             public void onClick(View v) {
                 interactionContainer.removeAllViewsInLayout();
-                Log.d("HEALTH", "Pokemon came back to health!");
-                for(int i =0;i<Utils.myPokemons.getSize();i++){
+                interactionStarted = false;
+                for (int i = 0; i < Utils.myPokemons.getSize(); i++) {
                     PokemonSprite currentPokemon = Utils.myPokemons.getMyPokemonByOrderNr(i);
                     currentPokemon.setCurrentHP(currentPokemon.getStats().getHp());
-
                     List<Move> moves = currentPokemon.getLearnedMoves();
-                   for(Move move: moves){
+                    for (Move move : moves) {
                         move.setCurrentPp(move.getPp());
                     }
                 }
-                //myPokemons.getMyPokemonByOrderNr(0).setCurrentHP(myPokemons.getMyPokemonByOrderNr(0).getStats().getHp());
-                //interaction.setText();
             }
         });
+    }
+
+    private void pokemarktInteraction(TextView interaction){
+        interaction.setText("Welcome \n What do you need?");
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        lp.topMargin=-100;
+        lp.leftMargin=50;
+        lp.width=100;
+
+
+
+        // dont put this in the interactioncontainer
+        menuList = new ListView(this);
+        menuList.setBackgroundColor(Color.WHITE);
+        String[] values = new String[] { "BUY", "SELL", "QUIT"};
+
+        final ArrayList<String> list = new ArrayList<String>();
+        for (int i = 0; i < values.length; ++i) {list.add(values[i]);}
+        final MyAdapter myAdapter = new MyAdapter(this, android.R.layout.simple_list_item_1, list);
+        menuList.setAdapter(myAdapter);
+
+        menuList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+                final String item = (String) parent.getItemAtPosition(position);
+                switch (item) {
+                    case "BUY":
+                        Log.d("SELL", "buy some stuff");
+                        break;
+                    case "SELL":
+                        Log.d("SELL","sell some stuff");
+                        break;
+                    case "QUIT":
+                        interactionContainer.removeAllViewsInLayout();
+                        interactionStarted = false;
+                        break;
+                }
+            }
+        });
+        interactionContainer.addView(menuList, lp);
     }
 
     private void openMenu(){

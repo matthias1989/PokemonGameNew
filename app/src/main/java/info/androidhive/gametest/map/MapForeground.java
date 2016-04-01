@@ -62,8 +62,8 @@ public class MapForeground extends Foreground
 
     private int spriteHeight = 48;
     private int spriteWidth = 32;
-    private int spritePosX = steps*7+spriteWidth; // X = 5
-    private int spritePosY = steps *7; // Y  = 0
+    private int spritePosX = tileSize*7+spriteWidth; // X = 5
+    private int spritePosY = tileSize *7; // Y  = 0
 
     private float mFieldWidth;
     private float mFieldHeight;
@@ -115,8 +115,8 @@ public class MapForeground extends Foreground
         mySprite.update();
         if(!Utils.searched){
             if(background != null) {
-                int col = (background.getScrollX()+spritePosX-steps)/steps;
-                int row = (background.getScrollY()+spritePosY)/steps;
+                int col = (background.getScrollX()+spritePosX-steps)/tileSize;
+                int row = (background.getScrollY()+spritePosY)/tileSize;
                 if (background.getBackgroundTile(row,col) == 'g' && !Utils.pokemonFound) {
                     //Log.d("DRAW",background.getBackgroundTile(row,col)+"");
                     if(!Utils.pokemonFound) {
@@ -192,8 +192,8 @@ public class MapForeground extends Foreground
         background = (MapBackground) mParent.getmThread().getBackground();
         firstLayer = (MapFirstLayer) mParent.getmThread().getFirstLayer();
 
-        int col = (background.getScrollX() + spritePosX) / steps;
-        int row = (background.getScrollY() + spritePosY - steps) / steps;
+        int col = (background.getScrollX() + spritePosX) / tileSize;
+        int row = (background.getScrollY() + spritePosY - steps) / tileSize;
 
         beforeDoor = false;
         if(background.getBackgroundTile(row,col) != '-') {
@@ -230,8 +230,8 @@ public class MapForeground extends Foreground
         background = (MapBackground) mParent.getmThread().getBackground();
         firstLayer = (MapFirstLayer) mParent.getmThread().getFirstLayer();
 
-        int col = (background.getScrollX() + spritePosX) / steps;
-        int row = (background.getScrollY() + spritePosY + steps) / steps;
+        int col = (background.getScrollX() + spritePosX) / tileSize;
+        int row = (background.getScrollY() + spritePosY + steps) / tileSize;
 
         if(background.getBackgroundTile(row,col) != '-') {
             if (stepAllowed(0, tileSize)) {
@@ -258,8 +258,8 @@ public class MapForeground extends Foreground
         }
         background = (MapBackground) mParent.getmThread().getBackground();
         firstLayer = (MapFirstLayer) mParent.getmThread().getFirstLayer();
-        int col = (background.getScrollX() + spritePosX - steps) / steps;
-        int row = (background.getScrollY() + spritePosY) / steps;
+        int col = (background.getScrollX() + spritePosX - steps) / tileSize;
+        int row = (background.getScrollY() + spritePosY) / tileSize;
 
         if(background.getBackgroundTile(row,col) != '-') {
             if (stepAllowed(-tileSize, 0)) {
@@ -292,8 +292,8 @@ public class MapForeground extends Foreground
         background = (MapBackground) mParent.getmThread().getBackground();
         firstLayer = (MapFirstLayer) mParent.getmThread().getFirstLayer();
 
-        int col = (background.getScrollX() + spritePosX + steps) / steps;
-        int row = (background.getScrollY() + spritePosY) / steps;
+        int col = (background.getScrollX() + spritePosX + steps) / tileSize;
+        int row = (background.getScrollY() + spritePosY) / tileSize;
 
         Log.d("COORDS",background.getScrollX()+","+background.getScrollY());
 
@@ -396,6 +396,7 @@ public class MapForeground extends Foreground
                 }
             }
             pokemonSprite.setCurrentExperience(110);
+            pokemonSprite.setCurrentHP(pokemonSprite.getStats().getHp());
             //pokemonSprite.setLevel(38);
         }
         else {
@@ -440,8 +441,8 @@ public class MapForeground extends Foreground
     }
 
     @Override
-    public boolean checkInteractionPossible() {
-        return false;
+    public String checkInteractionPossible() {
+        return "";
     }
 
     @Override

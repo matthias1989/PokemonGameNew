@@ -24,7 +24,7 @@ abstract public class Foreground extends info.androidhive.gametest.abstractClass
 
     abstract public void setStopMovement();
 
-    abstract public boolean checkInteractionPossible();
+    abstract public String checkInteractionPossible();
 
     abstract public void doInteraction();
 

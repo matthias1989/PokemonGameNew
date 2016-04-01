@@ -16,9 +16,11 @@ import info.androidhive.gametest.R;
 public class BuidingInsideBackground extends Background {
     private Bitmap buildingBm;
     private int startPosX = 0;
-    private int startPosY = -tileSize*3/2;
+    private int startPosY = 0;
     private int scrollX = 0;
     private int scrollY = 0;
+
+    private String buildingName;
 
     private SurfaceView mParent;
 
@@ -28,8 +30,9 @@ public class BuidingInsideBackground extends Background {
 
 
     public BuidingInsideBackground(SurfaceView view,String buildingName){
+        this.buildingName = buildingName;
         if(buildingName.equals("pokecenter"))
-            buildingBm = BitmapFactory.decodeResource(view.getResources(), R.drawable.pokemon_center_inside);
+            buildingBm = BitmapFactory.decodeResource(view.getResources(), R.drawable.pokemon_center_inside2_part1);
         else
             buildingBm = BitmapFactory.decodeResource(view.getResources(), R.drawable.pokemarkt_inside);
 
@@ -61,9 +64,22 @@ public class BuidingInsideBackground extends Background {
 
     @Override
     public void playfield(int width, int height) {
-        buildingBm = Bitmap.createScaledBitmap(buildingBm, width, height*2/3, false);
-        setmFieldWidth(width);
-        setmFieldHeight(height*2/3);
+        if(buildingName.equals("pokecenter")){
+            buildingBm = Bitmap.createScaledBitmap(buildingBm, width, height*2/3, false);
+            setmFieldWidth(width-tileSize);
+            setmFieldHeight(height*2/3-tileSize);
+        }
+        else
+        {//buildingBm = Bitmap.createScaledBitmap(buildingBm, width, height*2/3, false);
+            buildingBm = Bitmap.createScaledBitmap(buildingBm, width*2/3, height*2/3, false);
+            setmFieldWidth(width*2/3);
+            setmFieldHeight(height*2/3);
+            setStartPosX(5*tileSize);
+            setStartPosY(-1*tileSize);
+        }
+
+
+
     }
 
     @Override

@@ -1,11 +1,15 @@
 package info.androidhive.gametest;
 
+import android.content.Context;
+import android.content.res.AssetManager;
 import android.os.Environment;
 import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,13 +27,17 @@ import info.androidhive.gametest.pokemons.TypeEfficacy;
 public class DatabaseFileHandler {
     public static PokemonDataSource ds;
     public static ItemDataSource itemDs;
+    private static File textDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
-    public static void readData(){
-        File textDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        File file = new File(textDir,"db_config.txt");
+    public static void readData(Context context){
+
+
+        //File file = new File(textDir,"db_config.txt");
         ds = new PokemonDataSource();
         try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
+            //BufferedReader br = new BufferedReader(new FileReader(file));
+            InputStream is = context.getAssets().open("db_config.txt");
+            BufferedReader br = new BufferedReader(new InputStreamReader(is,"UTF-8"));
             String line;
 
             while ((line = br.readLine()) != null) {
@@ -130,11 +138,10 @@ public class DatabaseFileHandler {
         }
     }
 
-    public static void readData2(){
-        File textDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        File file = new File(textDir,"db_config2.txt");
+    public static void readData2(Context context){
         try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
+            InputStream is = context.getAssets().open("db_config2.txt");
+            BufferedReader br = new BufferedReader(new InputStreamReader(is,"UTF-8"));
             String line;
 
             while ((line = br.readLine()) != null) {
@@ -158,12 +165,12 @@ public class DatabaseFileHandler {
         }
     }
 
-    public static void readItemData(){
+    public static void readItemData(Context context){
         itemDs = new ItemDataSource();
-        File textDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        File file = new File(textDir,"db_config_items.txt");
+
         try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
+            InputStream is = context.getAssets().open("db_config_items.txt");
+            BufferedReader br = new BufferedReader(new InputStreamReader(is,"UTF-8"));
             String line;
             while ((line = br.readLine()) != null) {
 
@@ -176,12 +183,24 @@ public class DatabaseFileHandler {
                     String itemCategory = data[3];
                     String itemShortDescription = data[4];
 
-                    itemDs.addItem(new Item(itemId, itemName, itemCategory, itemShortDescription,cost));
+                    itemDs.addItem(new Item(itemId, itemName, itemCategory, itemShortDescription, cost));
                 }
             }
             br.close();
         }
         catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public static void readTest(Context context){
+
+
+        try {
+            InputStream is = context.getAssets().open("db_config.txt");
+            BufferedReader br = new BufferedReader(new InputStreamReader(is,"UTF-8"));
+        }
+        catch (Exception e){
             e.printStackTrace();
         }
     }
