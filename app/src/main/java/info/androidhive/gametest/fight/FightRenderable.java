@@ -333,18 +333,19 @@ public class FightRenderable extends Renderable {
             }
         }
         else{
-                attackMessage1 = "";
-                strCounter2 = 0;
-                timeCounter2 = 0;
+            firstCritHitMessage = "";
+            attackMessage1 = "";
+            strCounter2 = 0;
+            timeCounter2 = 0;
 
-                if(attacker1==myPokemon)
-                    fightListener.myAttackAnimationIsDone(myMove);
-                else
-                    fightListener.wildAttackAnimationIsDone(wildMove);
+            if(attacker1==myPokemon)
+                fightListener.myAttackAnimationIsDone(myMove);
+            else
+                fightListener.wildAttackAnimationIsDone(wildMove);
 
-                if(attackMessage2.equals("")){
-                    animationBusy = false;
-                }
+            if(attackMessage2.equals("")){
+                animationBusy = false;
+            }
 
 
         }
@@ -375,6 +376,7 @@ public class FightRenderable extends Renderable {
        }
 
         else {
+           secondCritHitMessage = "";
             attackMessage2 = "";
             strCounter2 = 0;
             timeCounter2 = 0;
@@ -509,7 +511,6 @@ public class FightRenderable extends Renderable {
                 timeCounter3++;
             }
 
-            //Log.d("THROW", "throw ball animation, timecounter: "+timeCounter);
         }
 
     }
@@ -561,8 +562,6 @@ public class FightRenderable extends Renderable {
     }
 
     public void wildAttacked(Move attack, PokemonSprite wildPokemon, boolean criticalHit){
-        firstCritHitMessage = "";
-        secondCritHitMessage = "";
         this.wildPokemon = wildPokemon;
         this.wildMove = attack;
         if(attackMessage1.equals("")) {        // the wild pokemon attacked first
@@ -583,12 +582,9 @@ public class FightRenderable extends Renderable {
         }
         animationBusy = true;
 
-        //Log.d("CRIT",criticalHit+"");
     }
 
     public void youAttacked(Move attack, PokemonSprite myPokemon, boolean criticalHit){
-        firstCritHitMessage = "";
-        secondCritHitMessage = "";
         this.myPokemon = myPokemon;
         this.myMove = attack;
         if(attackMessage1.equals("")) {                   // you attacked first
@@ -609,7 +605,6 @@ public class FightRenderable extends Renderable {
         }
         animationBusy = true;
 
-        //Log.d("CRIT",criticalHit+"");
     }
 
     public void throwPokeballToCatch(CustomItem ball, PokemonSprite wildPokemon){
@@ -620,7 +615,6 @@ public class FightRenderable extends Renderable {
         float HPmax = wildPokemon.getStats().getHp();
         float HPcurrent = wildPokemon.getCurrentHP();
         float a = ((3*HPmax - 2*HPcurrent) * rate * ballBonus * bonusStatus)/(3*HPmax);
-        Log.d("A",a+"");
         double b = 1048560 / Math.sqrt(Math.sqrt(16711680/a));
 
         pokeballMessage = "Go! "+ball.getName().replace("-"," ").toUpperCase()+"!";
@@ -635,7 +629,6 @@ public class FightRenderable extends Renderable {
         if(a>=255){
             pokemonCapturingState = "instant_caught";
             pokemonCapturingMessage = "Pokemon caught!";
-            Log.d("BALL","pokemon instant caught");
         }
         else{       // 4 shakes are necessary to capture the pokemon in this case
             Random r = new Random();
@@ -649,12 +642,10 @@ public class FightRenderable extends Renderable {
                 }
             }
             if(!ballFailed) {
-                Log.d("BALL", "Pokemon caught");
                 pokemonCapturingState="caught";
                 pokemonCapturingMessage = "Pokemon caught!";
             }
             else {
-                Log.d("BALL", "Pokemon escaped after "+shakeCounter + " shakes");
                 pokemonCapturingState="not_caught";
                 if(shakeCounter==3)
                     pokemonCapturingMessage = "ARG, almost had it!";

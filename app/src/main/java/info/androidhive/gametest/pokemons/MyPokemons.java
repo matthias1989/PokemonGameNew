@@ -55,6 +55,13 @@ public class MyPokemons implements Serializable {
         myPokemons.put(currentOrderId,firstPokemon);
     }
 
+    public void switchPokemon(PokemonSprite firstPokemon, PokemonSprite secondPokemon){
+        Integer firstPokemonOrderId = getMyOrderId(firstPokemon);
+        Integer secondPokemonOrderId = getMyOrderId(secondPokemon);
+        myPokemons.put(firstPokemonOrderId,secondPokemon);
+        myPokemons.put(secondPokemonOrderId,firstPokemon);
+    }
+
 
 
 //    public PokemonSprite getMyPokemonByUID(String UID){

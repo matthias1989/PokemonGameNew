@@ -10,33 +10,19 @@
     tools:context=".MainActivity">
 
     <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="350dp"
         android:id="@+id/main_layout">
-        <info.androidhive.gametest.GameSurfaceView
-            android:layout_width="match_parent"
-            android:layout_height="350dp"
-            android:id="@+id/view"
-            />
+
+
+
         <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_marginTop="230dp"
-            android:layout_height="100dp"
-            android:layout_marginBottom="20dp"
-            android:id="@+id/interaction_container"
-            android:orientation="vertical"
-            />
-        <LinearLayout
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:id="@+id/menu_container"
             android:orientation="vertical"
             android:layout_alignParentRight="true"
-            >
-
-
-
-        </LinearLayout>
+            />
 
     </RelativeLayout>
 
@@ -45,12 +31,13 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/main_layout"
         android:layout_marginTop="28dp"
+        android:id="@+id/controller_container"
         >
 
         <RelativeLayout
             android:layout_width="192dp"
             android:layout_height="wrap_content"
-            android:id="@+id/moveControls"
+            android:id="@+id/move_controls"
             >
             <Button
                 android:layout_width="@dimen/direction_keys_width"
@@ -93,8 +80,8 @@
         <RelativeLayout
             android:layout_width="192dp"
             android:layout_height="wrap_content"
-            android:id="@+id/menuControls"
-            android:layout_toRightOf="@+id/moveControls"
+            android:id="@+id/menu_controls"
+            android:layout_toRightOf="@+id/move_controls"
             >
             <Button
                 android:layout_width="@dimen/direction_keys_width"

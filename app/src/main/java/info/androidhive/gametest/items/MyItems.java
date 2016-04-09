@@ -1,5 +1,7 @@
 package info.androidhive.gametest.items;
 
+import android.util.Log;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,8 +13,9 @@ public class MyItems {
     private Map<CustomItem,Integer> myItems = new HashMap<>();
 
     public void addItem(CustomItem item,int amount){
-
-        myItems.put(item,amount);
+        boolean keyExists = setAmountByName(item.getName(),amount); // this method looks of the key already exists and then adds the amount to it
+        if(!keyExists && amount>0)  // if not (and the amount is higher than 0) add the element
+            myItems.put(item,amount);
     }
 
     public Map<CustomItem,Integer> getMyItems() {
@@ -33,16 +36,21 @@ public class MyItems {
         return 0;
     }
 
-    public void setAmountByName(String name,Integer amount){
+    public boolean setAmountByName(String name,Integer amount){
+        boolean valueSet = false;
         for (Map.Entry<CustomItem,Integer> entry : myItems.entrySet())
         {
             if(entry.getKey().getName().equals(name)){
                 int nextValue = entry.getValue()+amount;
                 if(nextValue>=0)
                     entry.setValue(nextValue);
+                else
+                    myItems.remove(entry.getKey());
+
+                valueSet = true;
             }
         }
-
+        return valueSet;
     }
 
 }

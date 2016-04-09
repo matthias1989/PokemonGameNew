@@ -118,7 +118,6 @@ public class MapForeground extends Foreground
                 int col = (background.getScrollX()+spritePosX-steps)/tileSize;
                 int row = (background.getScrollY()+spritePosY)/tileSize;
                 if (background.getBackgroundTile(row,col) == 'g' && !Utils.pokemonFound) {
-                    //Log.d("DRAW",background.getBackgroundTile(row,col)+"");
                     if(!Utils.pokemonFound) {
                         appearPokemon();
                     }
@@ -295,7 +294,6 @@ public class MapForeground extends Foreground
         int col = (background.getScrollX() + spritePosX + steps) / tileSize;
         int row = (background.getScrollY() + spritePosY) / tileSize;
 
-        Log.d("COORDS",background.getScrollX()+","+background.getScrollY());
 
         if(background.getBackgroundTile(row,col) != '-') {
             if (stepAllowed(tileSize, 0)) {
@@ -316,10 +314,7 @@ public class MapForeground extends Foreground
 
         int x = sprite.getX() - spritePosX -doorPosInBuildingX;
         int y = sprite.getY() - spritePosY -doorPosInBuildingY;
-        Log.d("coords",x+","+y);
-        Log.d("coords2",newScrollX+","+newScrollY);
         if((x==newScrollX) && (y==newScrollY)){
-            Log.d("CENTER","Enter the door");
             beforeDoor = true;
             if(sprite instanceof PokecenterSprite)
                 spriteForm = "pokecenter";
@@ -332,12 +327,10 @@ public class MapForeground extends Foreground
 
     private void enterPokemoncenter(){
         mParent.pokemoncenterEntered(mParent.getHolder());
-        Log.d("ENTER","Enterring the pokemon center...");
     }
 
     private void enterPokemarkt(){
         mParent.pokemarktEntered(mParent.getHolder());
-        Log.d("MARKT","Enter pokemarkt");
     }
 
     public boolean stepAllowed(int moveX,int moveY){
@@ -359,7 +352,6 @@ public class MapForeground extends Foreground
             int posX = sprite.getX()-spritePosX;
             int posY = sprite.getY()-spritePosY;
             if(rect.intersect(posX,posY,posX,posY)){
-                Log.d("CHECK", "collision!");
                 int doorPosInBuildingX = 0;
                 int doorPosInBuildingY = 0;
                 if(sprite instanceof PokecenterSprite) {
@@ -387,12 +379,12 @@ public class MapForeground extends Foreground
         if (getal < 16) {
             Utils.pokemonFound = true;
             if (getal < 8) {
-                pokemonSprite = new PokemonSprite("rattata", DatabaseFileHandler.ds);
+                pokemonSprite = new PokemonSprite("rattata", Utils.ds);
             } else {
                 if (getal < 14) {
-                    pokemonSprite = new PokemonSprite("pidgey",DatabaseFileHandler.ds);
+                    pokemonSprite = new PokemonSprite("pidgey",Utils.ds);
                 } else {
-                    pokemonSprite = new PokemonSprite("spearow",DatabaseFileHandler.ds);
+                    pokemonSprite = new PokemonSprite("spearow",Utils.ds);
                 }
             }
             pokemonSprite.setCurrentExperience(110);

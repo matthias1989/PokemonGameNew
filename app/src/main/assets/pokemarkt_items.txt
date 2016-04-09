@@ -1,0 +1,1 @@
+Sandgem_Town:Poké Ball,Paralyze Heal,Potion,Antidote;

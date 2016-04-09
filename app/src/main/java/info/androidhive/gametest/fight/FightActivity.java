@@ -1,7 +1,5 @@
 package info.androidhive.gametest.fight;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -14,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -45,7 +42,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
     private RelativeLayout fightButtonContainer;
     private LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 
-    private FightSurfaceView surfaceView;
+    private static FightSurfaceView surfaceView;
     private FrameLayout viewFightFrame;
     private RelativeLayout wildInfoContainer;
     private RelativeLayout myInfoContainer;
@@ -59,27 +56,26 @@ public class FightActivity extends AppCompatActivity implements FightListener{
     private TextView lblMyCurrentHP;
     private TextView lblMyMaxHP;
 
-    private Random r = new Random();
+    private static Random r = new Random();
 
-    private PokemonSprite firstPokemon;
+    private static PokemonSprite firstPokemon;
     private PokemonSprite firstPokemonAtStart;
-    private PokemonSprite wildPokemon;
+    private static PokemonSprite wildPokemon;
 
     private int currentWildHp;
 
-    private int wildDamage;
-    private int myDamage;
-    private boolean criticalHit = false;
+    private static int wildDamage;
+    private static int myDamage;
+    private static boolean criticalHit = false;
 
     private boolean myAttackDone = false;
     private boolean wildAttackDone = false;
-    private boolean menuOpened = false;
     private ListView menuList;
 
     private boolean wildIsAlive = true;
     private boolean youAreAlive = true;
-    private boolean myAnimationFinished = true;
-    private boolean wildAnimationFinished = true;
+    private static boolean myAnimationFinished = true;
+    private static boolean wildAnimationFinished = true;
 
    // public static PokemonSprite wildPokemon;
 
@@ -184,7 +180,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
             whoseHP.setProgressDrawable(getResources().getDrawable(R.drawable.progressbar_low_hp));
         whoseHP.getProgressDrawable().setBounds(bounds);
         whoseHP.setProgress(newProgress);
-        Log.d("PROGRESS",progressPerc+"");
+        Log.d("PROGRESS", progressPerc + "");
     }
 
     private void startActions(){
@@ -222,7 +218,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         run.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Utils.myPokemons.setFirstPokemon(firstPokemonAtStart.getName());
                 setResult(RESULT_CANCELED, getIntent().putExtra("FIGHT", "Run away"));
                 finish();
             }
@@ -239,7 +235,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         btnSwitchPokemon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pokemonMenu();
+                switchPokemon1();
 
             }
         });
@@ -457,17 +453,13 @@ public class FightActivity extends AppCompatActivity implements FightListener{
                 }
             }
         }
-        //startActions();
     }
 
     private void youAttack(Move myMove){
-        //boolean targetIsAlive = true;
-        //int myDamage = calculateDamage(myMove, firstPokemon, wildPokemon);
 
         changeProgressBar(wildHP.getProgress() - myDamage, wildHP);
         myMove.setCurrentPp(myMove.getCurrentPp() - 1);
         wildPokemon.setCurrentHP(wildHP.getProgress());
-        //surfaceView.getmThread().getFightRenderable().youAttacked(myMove,firstPokemon);
         Log.d("ENEMY", "Your " + firstPokemon.getName() + " attacks the wild pokemon with " + myMove.getName() + " and does " + myDamage + " damage. The wild pokemon has " + wildHP.getProgress() + " HP left");
 
 
@@ -508,7 +500,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         }
     }
 
-    private int calculateDamage(Move move, PokemonSprite attacker, PokemonSprite target){
+    public static int calculateDamage(Move move, PokemonSprite attacker, PokemonSprite target){
         float damageFactor = calculateDamageFactor(move.getType(), target.getType());
         int myDamage = (int) ((move.getPower() / 100.0) * attacker.getStats().getAttack() * damageFactor);
         float critChance = move.getCriticalChance();
@@ -523,8 +515,8 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         return myDamage;
     }
 
-    private float calculateDamageFactor(String damageTypeId,List<String> targetTypeIds){
-        List<TypeEfficacy> typeEfficacies = DatabaseFileHandler.ds.getTypeEfficacies();
+    public static float calculateDamageFactor(String damageTypeId,List<String> targetTypeIds){
+        List<TypeEfficacy> typeEfficacies = Utils.ds.getTypeEfficacies();
         int damageFactor = 100;
         int previousDamageFactor=-1;
         for(TypeEfficacy typeEfficacy : typeEfficacies){
@@ -540,177 +532,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         return damageFactor/100.0f;
     }
 
-    private void pokemonMenu(){
-        final MyPokemons myPokemons = Utils.myPokemons;
 
-        fightButtonContainer.setBackgroundResource(R.drawable.empty_pokemon_selection);
-
-        fightButtonContainer.removeAllViewsInLayout();
-
-        for(int i =0;i<myPokemons.getSize();i++){
-            if(i<6) {
-                final RelativeLayout pokemonSlot = new RelativeLayout(this);
-                RelativeLayout.LayoutParams lp1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                lp1.width = 490;
-                lp1.height = 170;
-
-                final PokemonSprite currentPokemon = myPokemons.getMyPokemonByOrderNr(i);
-                int extraTopMargin = 0;
-                int extraLeftMargin = 0;
-                switch (i) {
-                    case 0:
-                        pokemonSlot.setBackgroundResource(R.drawable.unselected_first_pokemon);
-                        lp1.height = 170;
-                        lp1.width = 495;
-                        lp1.leftMargin = 0;
-                        lp1.topMargin = 15;
-                        break;
-                    case 1:
-                        pokemonSlot.setBackgroundResource(R.drawable.unselected_pokemon);
-                        lp1.leftMargin = 505;
-                        lp1.topMargin = 40;
-                        break;
-                    case 2:
-                        pokemonSlot.setBackgroundResource(R.drawable.unselected_pokemon);
-                        lp1.leftMargin = 0;
-                        lp1.width = 495;
-                        lp1.topMargin = 190;
-                        break;
-                    case 3:
-                        pokemonSlot.setBackgroundResource(R.drawable.unselected_pokemon);
-                        lp1.leftMargin = 505;
-                        lp1.topMargin = 220;
-                        break;
-                    case 4:
-                        pokemonSlot.setBackgroundResource(R.drawable.unselected_pokemon);
-                        lp1.leftMargin = 0;
-                        lp1.topMargin = 370;
-                        lp1.width = 495;
-                        break;
-                    case 5:
-                        pokemonSlot.setBackgroundResource(R.drawable.unselected_pokemon);
-                        lp1.leftMargin = 505;
-                        lp1.topMargin = 400;
-                        break;
-
-                }
-                RelativeLayout.LayoutParams lp2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                lp2.leftMargin = 190 + extraLeftMargin;
-                lp2.topMargin = 20 + extraTopMargin;
-                TextView txtName = new TextView(this);
-                String upperString = currentPokemon.getName().substring(0, 1).toUpperCase() + currentPokemon.getName().substring(1);
-                txtName.setText(upperString);
-                txtName.setTextColor(Color.WHITE);
-                pokemonSlot.addView(txtName, lp2);
-
-                RelativeLayout.LayoutParams lp3 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                lp3.leftMargin = 90 + extraLeftMargin;
-                lp3.topMargin = 105 + extraTopMargin;
-                TextView txtLevel = new TextView(this);
-                txtLevel.setText(currentPokemon.getLevel() + "");
-                txtLevel.setTextColor(Color.WHITE);
-                pokemonSlot.addView(txtLevel, lp3);
-
-                // Current and max HP
-                int currentLeftMargin = 0;
-                RelativeLayout.LayoutParams lp4 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                TextView txtCurrentHP = new TextView(this);
-                txtCurrentHP.setText(currentPokemon.getCurrentHP() + " / " + currentPokemon.getStats().getHp());
-                if ((currentPokemon.getCurrentHP() + "").length() == 3)
-                    currentLeftMargin += extraLeftMargin - 40;
-                if ((currentPokemon.getStats().getHp() + "").length() == 3)
-                    currentLeftMargin += extraLeftMargin - 40;
-                lp4.leftMargin = 285 + extraLeftMargin;
-                lp4.topMargin = 110 + extraTopMargin;
-                txtCurrentHP.setTextColor(Color.WHITE);
-                pokemonSlot.addView(txtCurrentHP, lp4);
-
-                RelativeLayout.LayoutParams lp5 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                lp5.leftMargin = 245 + extraLeftMargin;
-                lp5.topMargin = 85 + extraTopMargin;
-                lp5.width = 192;
-                lp5.height = 18;
-                ProgressBar hpBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
-                hpBar.setMax(currentPokemon.getStats().getHp());
-
-                float progressPerc = currentPokemon.getCurrentHP() * 100 / hpBar.getMax() * 1.0f;
-                if (progressPerc > 70)
-                    hpBar.setProgressDrawable(getResources().getDrawable(R.drawable.progressbar_high_hp));
-                else if (progressPerc > 40)
-                    hpBar.setProgressDrawable(getResources().getDrawable(R.drawable.progressbar_medium_hp));
-                else
-                    hpBar.setProgressDrawable(getResources().getDrawable(R.drawable.progressbar_low_hp));
-                hpBar.setProgress(currentPokemon.getCurrentHP());
-
-                pokemonSlot.addView(hpBar, lp5);
-
-                final int counter = i;
-
-                pokemonSlot.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        popChoiceMenu(currentPokemon);
-
-                    }
-                });
-
-                fightButtonContainer.addView(pokemonSlot, lp1);
-            }
-
-        }
-
-        RelativeLayout.LayoutParams lp6 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        lp6.leftMargin=780;
-        lp6.topMargin = 590;
-        lp6.width = 220;
-        lp6.height = 110;
-        Button btnCancel = new Button(this);
-        btnCancel.setBackgroundResource(R.drawable.pokemon_select_cancel);
-        btnCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActions();
-            }
-        });
-        fightButtonContainer.addView(btnCancel, lp6);
-    }
-
-    private void popChoiceMenu(final PokemonSprite currentPokemon){
-
-        // popup, als daar op switch wordt geklikt, dan pas gebeurt dit
-        menuOpened = true;
-
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        menuList = new ListView(this);
-        menuList.setBackgroundColor(Color.WHITE);
-        String[] values = new String[] { "STATS", "SWITCH", "CANCEL"};
-
-        final ArrayList<String> list = new ArrayList<String>();
-        for (int i = 0; i < values.length; ++i) {list.add(values[i]);}
-        final MyAdapter myAdapter = new MyAdapter(this, android.R.layout.simple_list_item_1, list);
-        menuList.setAdapter(myAdapter);
-
-        menuList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-                final String item = (String) parent.getItemAtPosition(position);
-                switch (item) {
-                    case "SWITCH":
-                        switchPokemon(currentPokemon);
-                        //Log.d("POKEMONSELECTED",pokemonSelected);
-                        break;
-                    case "CANCEL":
-                        menuOpened = false;
-                        pokemonMenu();
-                        break;
-                }
-                //Log.d("ITEM",item+ " selected");
-            }
-        });
-        fightButtonContainer.addView(menuList, lp);
-
-
-    }
 
     private void bagMenu(){
         fightButtonContainer.setBackgroundResource(R.drawable.bag_overview);
@@ -833,11 +655,15 @@ public class FightActivity extends AppCompatActivity implements FightListener{
                         int randomMove = r.nextInt(moves.size());
                         Move selectedMove = moves.get(randomMove);
                         wildDamage = calculateDamage(selectedMove, wildPokemon, firstPokemon);
-                        surfaceView.getmThread().getFightRenderable().wildAttacked(selectedMove, wildPokemon,criticalHit);
+                        surfaceView.getmThread().getFightRenderable().wildAttacked(selectedMove, wildPokemon, criticalHit);
                     }
                 });
                 fightButtonContainer.addView(ballsCell, lp2);
                 counter++;
+                if(counter%2==1) x= 490;
+                else  x=0;
+                y = counter/2*170;
+
             }
         }
 
@@ -912,13 +738,23 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         itemAmountLabel.setTextSize(18);
         cell.addView(itemAmountLabel, lp4);
     }
-    private void switchPokemon(PokemonSprite currentPokemon){
-        fightButtonContainer.removeAllViewsInLayout();
-        fightButtonContainer.setVisibility(View.INVISIBLE);
+
+    private void switchPokemon1(){
+        Button btnCancel = Utils.pokemonMenu(fightButtonContainer,this);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActions();
+            }
+        });
+    }
+    public static void switchPokemon2(PokemonSprite currentPokemon,RelativeLayout container){
+        container.removeAllViewsInLayout();
+        container.setVisibility(View.INVISIBLE);
         myAnimationFinished = false;
 
         Utils.myPokemons.setFirstPokemon(currentPokemon.getName());
-        menuOpened = false;
+        Utils.menuOpened = false;
         surfaceView.getmThread().getFightRenderable().changePokemon();
 
         // als geswitcht tijdens het gevecht, laat wild aanvallen
@@ -926,7 +762,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         int randomMove = r.nextInt(moves.size());
         Move selectedMove = moves.get(randomMove);
         wildDamage = calculateDamage(selectedMove, wildPokemon, firstPokemon);
-        surfaceView.getmThread().getFightRenderable().wildAttacked(selectedMove, wildPokemon,criticalHit);
+        surfaceView.getmThread().getFightRenderable().wildAttacked(selectedMove, wildPokemon, criticalHit);
 
     }
 

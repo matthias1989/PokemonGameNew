@@ -20,6 +20,7 @@ import static info.androidhive.gametest.R.drawable.battle_bg1;
  */
 public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callback
 {
+    private InteractionListener interactionListener;
     private RenderThread mThread;
     private Context mParent;
     private SurfaceHolder mHolder;
@@ -76,14 +77,16 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 //            mThread.quit();
         mThread = new MapRenderThread(holder,this,status);
         mThread.start();
+        mThread.getFirstLayer().setInteractionListener(interactionListener);
     }
 
     public void pokemoncenterEntered(SurfaceHolder holder){
         Utils.scrollCoords.put("scrollX",mThread.getBackground().getScrollX());
         Utils.scrollCoords.put("scrollY",mThread.getBackground().getScrollY()+ Renderable.tileSize);
         mThread.quit();
-        mThread = new BuildingInsideRenderThread(holder,this,status,"pokecenter");
+        mThread = new BuildingInsideRenderThread(holder,this,status,"pokecenter");   // change this after
         mThread.start();
+        mThread.getFirstLayer().setInteractionListener(interactionListener);
         mThread.setSize(getWidth(), getHeight());
     }
 
@@ -93,6 +96,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         mThread.quit();
         mThread = new BuildingInsideRenderThread(holder,this,status,"pokemarkt");
         mThread.start();
+        mThread.getFirstLayer().setInteractionListener(interactionListener);
         mThread.setSize(getWidth(), getHeight());
     }
 
@@ -100,6 +104,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         mThread.quit();
         mThread = new MapRenderThread(holder,this,status);
         mThread.start();
+        mThread.getFirstLayer().setInteractionListener(interactionListener);
         //mThread.setSize(getWidth(),getHeight());
     }
 
@@ -110,6 +115,10 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         //mThread.setSize(2000,2000);
         mThread.setSize(20000, 20000);
         Log.d("MAX_SIZE", width + "");
+    }
+
+    public void setInteractionListener(InteractionListener interactionListener) {
+        this.interactionListener = interactionListener;
     }
 
     public SurfaceHolder getmHolder(){

@@ -13,8 +13,11 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import info.androidhive.gametest.items.CustomItem;
 import info.androidhive.gametest.items.Item;
 import info.androidhive.gametest.items.ItemDataSource;
+import info.androidhive.gametest.items.MyItems;
+import info.androidhive.gametest.items.PokemarktItemList;
 import info.androidhive.gametest.pokemons.Move;
 import info.androidhive.gametest.pokemons.Pokemon;
 import info.androidhive.gametest.pokemons.PokemonDataSource;
@@ -25,15 +28,14 @@ import info.androidhive.gametest.pokemons.TypeEfficacy;
  * Created by matthias on 3/22/2016.
  */
 public class DatabaseFileHandler {
-    public static PokemonDataSource ds;
-    public static ItemDataSource itemDs;
+
     private static File textDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
     public static void readData(Context context){
 
 
         //File file = new File(textDir,"db_config.txt");
-        ds = new PokemonDataSource();
+        Utils.ds = new PokemonDataSource();
         try {
             //BufferedReader br = new BufferedReader(new FileReader(file));
             InputStream is = context.getAssets().open("db_config.txt");
@@ -128,7 +130,7 @@ public class DatabaseFileHandler {
                     pokemon.setStats(stat);
 
 
-                    ds.addPokemon(pokemon);
+                    Utils.ds.addPokemon(pokemon);
                 }
             }
             br.close();
@@ -155,7 +157,7 @@ public class DatabaseFileHandler {
 
                     TypeEfficacy typeEfficacy = new TypeEfficacy(damageTypeId,targetTypeId,damageFactor);
 
-                    ds.addTypeEfficacy(typeEfficacy);
+                    Utils.ds.addTypeEfficacy(typeEfficacy);
                 }
             }
             br.close();
@@ -166,7 +168,7 @@ public class DatabaseFileHandler {
     }
 
     public static void readItemData(Context context){
-        itemDs = new ItemDataSource();
+        Utils.itemDs = new ItemDataSource();
 
         try {
             InputStream is = context.getAssets().open("db_config_items.txt");
@@ -183,7 +185,36 @@ public class DatabaseFileHandler {
                     String itemCategory = data[3];
                     String itemShortDescription = data[4];
 
-                    itemDs.addItem(new Item(itemId, itemName, itemCategory, itemShortDescription, cost));
+                    //Log.d("BLA",itemId+"=>"+itemName);
+                    Utils.itemDs.addItem(new Item(itemId, itemName, itemCategory, itemShortDescription, cost));
+                }
+            }
+            br.close();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public static void readItemData2(Context context){
+
+        try {
+            InputStream is = context.getAssets().open("pokemarkt_items.txt");
+            BufferedReader br = new BufferedReader(new InputStreamReader(is,"UTF-8"));
+            String line;
+            while ((line = br.readLine()) != null) {
+                String object[] = line.split(";");          // each city
+                for(int i =0;i<object.length;i++){
+                    String data[] = object[i].split(":");
+                    String cityName = data[0];
+                    String items = data[1];
+                    String itemList[] = items.split(",");
+                    Utils.pokemarktItemList.addPokemarkt(cityName);
+                    //Log.d("BLA",cityName);
+                    for(String itemName : itemList){
+                        CustomItem item = new CustomItem(itemName,Utils.itemDs);
+                        Utils.pokemarktItemList.addItemToPokemarkt(item);
+                    }
                 }
             }
             br.close();
