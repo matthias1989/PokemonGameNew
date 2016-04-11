@@ -15,7 +15,7 @@ import info.androidhive.gametest.abstractClasses.Renderable;
 public class MapRenderThread extends RenderThread {
 
 
-    public MapRenderThread(SurfaceHolder holder, SurfaceView view,String status)
+    public MapRenderThread(SurfaceHolder holder, SurfaceView view)
     {
         super(holder);
 
@@ -23,7 +23,7 @@ public class MapRenderThread extends RenderThread {
         Renderable[]  mRenderables = new Renderable[3];
         mRenderables[0] = new MapBackground(view);
         mRenderables[1] = new MapFirstLayer(view);
-        mRenderables[2] = new MapForeground(100 + rand.nextInt(1500),view,status);
+        mRenderables[2] = new MapForeground(100 + rand.nextInt(1500),view);
 
         setBackground((MapBackground) mRenderables[0]);
         setFirstLayer((MapFirstLayer) mRenderables[1]);

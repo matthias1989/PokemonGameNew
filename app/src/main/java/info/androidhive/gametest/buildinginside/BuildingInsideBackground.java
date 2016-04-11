@@ -81,16 +81,16 @@ public class BuildingInsideBackground extends Background {
     public void playfield(int width, int height) {
         if(buildingName.equals("pokecenter")){
             buildingBm = Bitmap.createScaledBitmap(buildingBm, width, height*2/3, false);
-            setmFieldWidth(width-tileSize);
-            setmFieldHeight(height*2/3-tileSize);
+            setmFieldWidth(width-Utils.tileSize);
+            setmFieldHeight(height*2/3-Utils.tileSize);
         }
         else
         {//buildingBm = Bitmap.createScaledBitmap(buildingBm, width, height*2/3, false);
             buildingBm = Bitmap.createScaledBitmap(buildingBm, width*2/3, height*2/3, false);
             setmFieldWidth(width*2/3);
             setmFieldHeight(height*2/3);
-            setStartPosX(5*tileSize);
-            setStartPosY(-1*tileSize);
+            setStartPosX(5*Utils.tileSize);
+            setStartPosY(-1*Utils.tileSize);
         }
 
 

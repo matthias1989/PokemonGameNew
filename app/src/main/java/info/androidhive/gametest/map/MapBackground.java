@@ -16,6 +16,8 @@ import info.androidhive.gametest.abstractClasses.Background;
 import info.androidhive.gametest.MainActivity;
 import info.androidhive.gametest.R;
 
+import static info.androidhive.gametest.R.drawable.log_screen;
+
 /**
  * Created by matthias on 3/12/2016.
  */
@@ -26,15 +28,15 @@ public class MapBackground extends Background
     private int scrollY = Utils.scrollCoords.get("scrollY");
     private SurfaceView mParent;
 
-
+    private Bitmap logScreen;
 
 
     private int startPosX = 0;
     private int startPosY = 0;
 
-
     private int scaleX;
     private int scaleY;
+
 
     private char[][] matrix = new char[1000][1000];
 
@@ -48,14 +50,18 @@ public class MapBackground extends Background
 
         Utils.floorTile = BitmapFactory.decodeResource(view.getResources(), R.drawable.floor_tile);
         Utils.grassA = BitmapFactory.decodeResource(view.getResources(), R.drawable.grass_a);
-        Utils.grassA = Bitmap.createScaledBitmap(Utils.grassA, tileSize, tileSize, false);
+        Utils.grassA = Bitmap.createScaledBitmap(Utils.grassA, Utils.tileSize, Utils.tileSize, false);
 
         Utils.grassB = BitmapFactory.decodeResource(view.getResources(), R.drawable.grass_b);
-        Utils.grassB = Bitmap.createScaledBitmap(Utils.grassB, tileSize, tileSize, false);
+        Utils.grassB = Bitmap.createScaledBitmap(Utils.grassB, Utils.tileSize, Utils.tileSize, false);
 
 
+        Utils.exclamationMark = BitmapFactory.decodeResource(view.getResources(), R.drawable.exclamation_mark);
+        Utils.exclamationMark = Bitmap.createScaledBitmap(Utils.exclamationMark, Utils.tileSize, Utils.tileSize, false);
 
 
+        logScreen = BitmapFactory.decodeResource(view.getResources(), log_screen);
+        logScreen = Bitmap.createScaledBitmap(logScreen, 1000, 145, false);
 
         getPlayField();
 //        setScrollX(scrollX);
@@ -157,29 +163,32 @@ public class MapBackground extends Background
                 switch (tile) {
                     case 'w':
                         c.drawBitmap(Utils.wallTile, x - scrollX, y - scrollY, null);
-                        x += tileSize;
+                        x += Utils.tileSize;
                         break;
                     case 'f':
                         c.drawBitmap(Utils.floorTile, x - scrollX, y - scrollY, null);
-                        x += tileSize;
+                        x += Utils.tileSize;
                         break;
                     case 'g':
                         c.drawBitmap(Utils.grassA,x - scrollX, y - scrollY, null);
-                        x += tileSize;
+                        x += Utils.tileSize;
                         break;
                     case 'G':
                         c.drawBitmap(Utils.grassB,x - scrollX, y - scrollY, null);
-                        x += tileSize;
+                        x += Utils.tileSize;
                         break;
                     case '-':
-                        x += tileSize;
+                        x += Utils.tileSize;
                         break;
                 }
             }
-            y +=  tileSize;
+            y +=  Utils.tileSize;
             x = startPosX;
 
         }
+        if(Utils.interactionMessageDisplayed)
+            c.drawBitmap(logScreen, 0, 790, null);  // only draw  this when there is an interaction going on
+
     }
 
 

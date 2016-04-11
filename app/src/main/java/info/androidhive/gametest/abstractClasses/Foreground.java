@@ -10,7 +10,6 @@ abstract public class Foreground extends info.androidhive.gametest.abstractClass
     abstract public boolean isActionStopped();
     abstract public void setActionStopped(boolean actionStopped);
 
-    abstract public Sprite createSprite(int id);
 
     abstract public  void goUp();
     abstract public  void goDown();

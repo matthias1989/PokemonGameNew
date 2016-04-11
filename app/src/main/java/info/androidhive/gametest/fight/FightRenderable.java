@@ -42,7 +42,6 @@ public class FightRenderable extends Renderable {
 
     private SurfaceHolder mHolder;
     private SurfaceView mView;
-    private TextView fightInfoTxt;
 
     private boolean endOfEncounter = false;
 
@@ -78,6 +77,7 @@ public class FightRenderable extends Renderable {
     private String endBattleMessage = "";
     private String endBattleStatus = "";
     private String pokeballMessage = "";
+    private String continueFightingMessage = "";
     private boolean pokemonChanged = false;
     private boolean animationBusy = false;
 
@@ -107,7 +107,7 @@ public class FightRenderable extends Renderable {
         Utils.wildPokemonBm = BitmapFactory.decodeResource(view.getResources(), resID);
         Utils.wildPokemonBm = Bitmap.createScaledBitmap(Utils.wildPokemonBm, 350, 350, false);
 
-        PokemonSprite myPokemon = Utils.myPokemons.getMyPokemonByOrderNr(0);
+        PokemonSprite myPokemon = Utils.mySprite.getMyPokemons().getMyPokemonByOrderNr(0);
         String id2 = "a"+myPokemon.getId()+"_back";
         resID = view.getResources().getIdentifier(id2, "drawable", view.getContext().getPackageName());
         Utils.myPokemonBm = BitmapFactory.decodeResource(view.getResources(), resID);
@@ -213,6 +213,9 @@ public class FightRenderable extends Renderable {
         loadAttackInfo(c);
         throwPokeballToCatchAnimation(c);
         loadEndAnimation(c);
+        continueFightingAnimation(c);
+
+
 
         //c.drawBitmap(myPokemonBm,x2+60,328,null);
     }
@@ -244,7 +247,7 @@ public class FightRenderable extends Renderable {
 
             }
             if(timeCounter>40){
-                if(timeCounter2==0 || timeCounter2>LENGTH_OF_ATTACK || currentAttacker==myPokemon){
+                if((timeCounter2==0 || timeCounter2>LENGTH_OF_ATTACK || currentAttacker==myPokemon) && !endBattleStatus.equals("LOST")){
                             c.drawBitmap(Utils.myPokemonBm, x2 + 60, 290, null);
                 }
 
@@ -528,20 +531,48 @@ public class FightRenderable extends Renderable {
                 if (strCounter2 < endBattleMessage.length()) {
                     strCounter2++;
                 }
-                timeCounter2++;
             }
-            else{
+            else if(timeCounter2==50){
                 fightListener.finishBattle(gainedExperience);
                 endOfEncounter = true;
                 animationBusy = false;
             }
+            timeCounter2++;
         }
     }
 
+    public void continueFightingAnimation(Canvas c){
 
+        if(!continueFightingMessage.equals("")) {
+            c.drawText(continueFightingMessage, 0, strCounter2, 70, 690, paint);
+
+
+            if (strCounter2 < continueFightingMessage.length()) {
+                strCounter2++;
+            }
+            else{
+                Log.d("COUNTERS",strCounter2+","+timeCounter2);
+                if(timeCounter2==50){       // do this only once
+                    fightListener.switchPokemonAfterFainted();
+
+
+                }
+
+            }
+            timeCounter2++;
+
+
+        }
+    }
 
     public void changePokemon(){
-        PokemonSprite myPokemon = Utils.myPokemons.getMyPokemonByOrderNr(0);
+        continueFightingMessage ="";
+        endBattleStatus = "";
+        endOfEncounter = false;
+        timeCounter2 = 0;
+        strCounter2 = 0;
+
+        PokemonSprite myPokemon = Utils.mySprite.getMyPokemons().getMyPokemonByOrderNr(0);
         String id2 = "a" + myPokemon.getId()+"_back";
 
         int resID = mView.getResources().getIdentifier(id2, "drawable", mView.getContext().getPackageName());
@@ -557,12 +588,13 @@ public class FightRenderable extends Renderable {
         ballMovementX =0;          // these 2 vars will be used to move the ball from a start loc to a next one
         ballMovementY =0;
 
-        animationBusy = true;
+        animationBusy = false;
 
     }
 
-    public void wildAttacked(Move attack, PokemonSprite wildPokemon, boolean criticalHit){
+    public void wildAttacked(Move attack, PokemonSprite wildPokemon, PokemonSprite myPokemon, boolean criticalHit){
         this.wildPokemon = wildPokemon;
+        this.myPokemon = myPokemon;
         this.wildMove = attack;
         if(attackMessage1.equals("")) {        // the wild pokemon attacked first
             attackMessage1 = "The wild " + wildPokemon.getName().toUpperCase() + " used " + attack.getName().toUpperCase();
@@ -584,7 +616,8 @@ public class FightRenderable extends Renderable {
 
     }
 
-    public void youAttacked(Move attack, PokemonSprite myPokemon, boolean criticalHit){
+    public void youAttacked(Move attack, PokemonSprite myPokemon, PokemonSprite wildPokemon, boolean criticalHit){
+        this.wildPokemon = wildPokemon;
         this.myPokemon = myPokemon;
         this.myMove = attack;
         if(attackMessage1.equals("")) {                   // you attacked first
@@ -667,9 +700,19 @@ public class FightRenderable extends Renderable {
     }
 
     public void youLost(){
-        endBattleMessage = "You lost";
+        endBattleMessage = myPokemon.getName().toUpperCase()+" fainted";
         animationBusy = true;
 
+    }
+
+    public void showContinueFightingMessage(){
+        //endBattleStatus = "";
+        endBattleMessage = "";
+        //endOfEncounter = false;
+        continueFightingMessage = "Do you want to select another pokémon?";
+        animationBusy = true;
+        timeCounter2 = 0;
+        strCounter2 = 0;
     }
 
     private float calculateBallBonus(CustomItem ball){

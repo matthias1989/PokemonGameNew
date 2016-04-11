@@ -31,6 +31,7 @@ import info.androidhive.gametest.map.MapRenderThread;
 import info.androidhive.gametest.pokemons.Move;
 import info.androidhive.gametest.pokemons.PokemonSprite;
 import info.androidhive.gametest.sprites.MyAdapter;
+import info.androidhive.gametest.sprites.TrainerSprite;
 
 
 public class MainActivity extends Activity implements InteractionListener
@@ -72,54 +73,9 @@ public class MainActivity extends Activity implements InteractionListener
         DatabaseFileHandler.readData2(this);
         DatabaseFileHandler.readItemData(this);
         DatabaseFileHandler.readItemData2(this);
-        //DatabaseFileHandler.readTest(this);
 
-        PokemonSprite myPokemon = new PokemonSprite("charmander",Utils.ds);       // pikachu lukt wel!!!
-        myPokemon.setCurrentExperience(400);
-        myPokemon.setCurrentHP(myPokemon.getStats().getHp());
-        Utils.myPokemons.addPokemon(myPokemon);
-
-        PokemonSprite myPokemon2 = new PokemonSprite("sandslash",Utils.ds);       // pikachu lukt wel!!!
-        myPokemon2.setCurrentExperience(300);
-        myPokemon2.setCurrentHP(myPokemon2.getStats().getHp());
-        Utils.myPokemons.addPokemon(myPokemon2);
-
-        PokemonSprite myPokemon3 = new PokemonSprite("pikachu",Utils.ds);       // pikachu lukt wel!!!
-        myPokemon3.setCurrentExperience(40000);
-        myPokemon3.setCurrentHP(myPokemon3.getStats().getHp());
-        Utils.myPokemons.addPokemon(myPokemon3);
-
-        PokemonSprite myPokemon4 = new PokemonSprite("squirtle",Utils.ds);       // pikachu lukt wel!!!
-        myPokemon4.setCurrentExperience(800);
-        myPokemon4.setCurrentHP(myPokemon4.getStats().getHp());
-        Utils.myPokemons.addPokemon(myPokemon4);
-
-        PokemonSprite myPokemon5 = new PokemonSprite("snorlax",Utils.ds);       // pikachu lukt wel!!!
-        myPokemon5.setCurrentExperience(3000);
-        myPokemon5.setCurrentHP(myPokemon5.getStats().getHp());
-        Utils.myPokemons.addPokemon(myPokemon5);
-
-//        PokemonSprite myPokemon6 = new PokemonSprite("mew",DatabaseFileHandler.ds);       // pikachu lukt wel!!!
-//        myPokemon6.setCurrentExperience(300000);
-//        myPokemon6.setCurrentHP(myPokemon6.getStats().getHp());
-//        Utils.myPokemons.addPokemon(myPokemon6);
-
-
-        Utils.currentCity = "Sandgem_Town";
-        Utils.myMoney = 3500;
-
-
-        //CustomItem item = new CustomItem("Great Ball",Utils.itemDs);
-        //Utils.myItems.addItem(item, 50);
-
-        //Log.d("TEST", Utils.pokemarktItemList.getPokemarktStorage().toString());
-
-
-        Utils.scrollCoords = new HashMap<>();
-        Utils.scrollCoords.put("scrollX", 0);
-        Utils.scrollCoords.put("scrollY", -Renderable.steps * 6);
-        Utils.assetManager = getAssets();
-
+        Utils.setupGame(this);
+        DatabaseFileHandler.readSpriteInfo(this);
 
 
         setContentView(R.layout.activity_main);
@@ -129,9 +85,7 @@ public class MainActivity extends Activity implements InteractionListener
 
         mainLayout = (RelativeLayout) findViewById(R.id.main_layout);
 
-
         view = new GameSurfaceView(this);
-        //view = (GameSurfaceView) findViewById(R.id.view);
         view.setInteractionListener(this);
         mainLayout.addView(view, lp);
 
@@ -140,7 +94,6 @@ public class MainActivity extends Activity implements InteractionListener
         menuControls = (RelativeLayout) findViewById(R.id.menu_controls);
 
         context = this;
-
     }
 
 
@@ -149,25 +102,15 @@ public class MainActivity extends Activity implements InteractionListener
     protected void onStart() {
         super.onStart();
 
-
-
-        String status = "frontStanding";
         if(!getValueForKey("scrollX").equals("VALUE NOT SAVED")){
-
-            status = getValueForKey("status");
-
             saveKeyValueString("scrollXBG","VALUE NOT SAVED");
             saveKeyValueString("scrollYBG","VALUE NOT SAVED");
             saveKeyValueString("status", "VALUE NOT SAVED");
-
         }
-
-
         setupControllers();
         menuContainer= (RelativeLayout) findViewById(R.id.menu_container);
-
-
     }
+
 
     private void setupControllers(){
         btnUp = (Button) findViewById(R.id.up);
@@ -175,7 +118,7 @@ public class MainActivity extends Activity implements InteractionListener
         btnUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (view.getmThread().getForeground() != null)
+                if (view.getmThread().getForeground() != null && !Utils.trainerFoundMe)
                     view.getmThread().getForeground().goUp();
 
                 if (Utils.pokemonFound) {
@@ -190,7 +133,7 @@ public class MainActivity extends Activity implements InteractionListener
         btnDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (view.getmThread().getForeground() != null)
+                if (view.getmThread().getForeground() != null && !Utils.trainerFoundMe)
                     view.getmThread().getForeground().goDown();
                 if (Utils.pokemonFound) {
                     startFightActivity();
@@ -204,7 +147,7 @@ public class MainActivity extends Activity implements InteractionListener
         btnLeft.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (view.getmThread().getForeground() != null)
+                if (view.getmThread().getForeground() != null && !Utils.trainerFoundMe)
                     view.getmThread().getForeground().goLeft();
                 if (Utils.pokemonFound) {
                     startFightActivity();
@@ -217,7 +160,7 @@ public class MainActivity extends Activity implements InteractionListener
         btnRight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (view.getmThread().getForeground() != null)
+                if (view.getmThread().getForeground() != null && !Utils.trainerFoundMe)
                     view.getmThread().getForeground().goRight();
                 if (Utils.pokemonFound) {
                     startFightActivity();
@@ -271,14 +214,14 @@ public class MainActivity extends Activity implements InteractionListener
                     if (mHandler != null) return true;
                     mHandler = new Handler();
                     mHandler.postDelayed(mAction, 200);
-                    if(view.getmThread().getForeground() != null)
+                    if(view.getmThread().getForeground() != null && !Utils.trainerFoundMe)
                         view.getmThread().getForeground().setActionStopped(false);
                     break;
                 case MotionEvent.ACTION_UP:
                     if (mHandler == null) return true;
                     mHandler.removeCallbacks(mAction);
                     mHandler = null;
-                    if(view.getmThread().getForeground()!= null)        // when entering the pokemon center, this action is still executed
+                    if(view.getmThread().getForeground()!= null && !Utils.trainerFoundMe)        // when entering the pokemon center, this action is still executed
                         view.getmThread().getForeground().setActionStopped(true);
                     break;
             }
@@ -289,7 +232,7 @@ public class MainActivity extends Activity implements InteractionListener
             @Override
             public void run() {
 
-                if (!Utils.pokemonFound) {
+                if (!Utils.pokemonFound && !Utils.trainerFoundMe) {
 
                     Foreground foreground = view.getmThread().getForeground();
 
@@ -317,12 +260,10 @@ public class MainActivity extends Activity implements InteractionListener
     }
 
     public void startFightActivity(){
-        // HashMap<String,PokemonSprite> fight
-        // save data (scrollX and scrollY and sprite direction
 
-        int scrollX = ((MapRenderThread) view.getmThread()).getBackground().getScrollX();
-        int scrollY = ((MapRenderThread) view.getmThread()).getBackground().getScrollY();
-        String status = ((MapRenderThread)view.getmThread()).getForeground().getSprite().getStatus();
+        int scrollX = view.getmThread().getBackground().getScrollX();
+        int scrollY = view.getmThread().getBackground().getScrollY();
+        String status = ((TrainerSprite)view.getmThread().getForeground().getSprite()).getStatus();
 
         saveKeyValueString("status",status);
 
@@ -344,7 +285,7 @@ public class MainActivity extends Activity implements InteractionListener
             {
                 String value = data.getStringExtra("FIGHT");
                 if(value.contains("caught"))
-                    Log.d("NEWPOKE",Utils.myPokemons.getMyPokemonByOrderNr(5).getName());
+                    Log.d("NEWPOKE", Utils.mySprite.getMyPokemons().getMyPokemonByOrderNr(5).getName());
             }
             else if(resultCode == RESULT_CANCELED)
             {
@@ -433,8 +374,8 @@ public class MainActivity extends Activity implements InteractionListener
                 mainLayout.removeView(dialogLayout);
                 firstLayer.pokecenterButtonClicked("yes");
                 interactionStarted = false;
-                for (int i = 0; i < Utils.myPokemons.getSize(); i++) {
-                    PokemonSprite currentPokemon = Utils.myPokemons.getMyPokemonByOrderNr(i);
+                for (int i = 0; i < Utils.mySprite.getMyPokemons().getSize(); i++) {
+                    PokemonSprite currentPokemon = Utils.mySprite.getMyPokemons().getMyPokemonByOrderNr(i);
                     currentPokemon.setCurrentHP(currentPokemon.getStats().getHp());
                     List<Move> moves = currentPokemon.getLearnedMoves();
                     for (Move move : moves) {
@@ -621,5 +562,15 @@ public class MainActivity extends Activity implements InteractionListener
             }
         });
 
+    }
+
+    @Override
+    public void trainerFightStarted(TrainerSprite currentTrainer) {
+
+        Utils.trainerFoundMe = false;
+        currentTrainer.setDoneFighting(true);
+        Log.d("FIGHT", "fight started with " + currentTrainer.getMyPokemons().getMyPokemonByOrderNr(0).getName() );
+
+        //startFightActivity();
     }
 }

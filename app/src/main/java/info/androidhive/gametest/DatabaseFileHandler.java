@@ -2,6 +2,8 @@ package info.androidhive.gametest;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.util.Log;
 
@@ -19,10 +21,14 @@ import info.androidhive.gametest.items.ItemDataSource;
 import info.androidhive.gametest.items.MyItems;
 import info.androidhive.gametest.items.PokemarktItemList;
 import info.androidhive.gametest.pokemons.Move;
+import info.androidhive.gametest.pokemons.MyPokemons;
 import info.androidhive.gametest.pokemons.Pokemon;
 import info.androidhive.gametest.pokemons.PokemonDataSource;
+import info.androidhive.gametest.pokemons.PokemonSprite;
 import info.androidhive.gametest.pokemons.Stat;
 import info.androidhive.gametest.pokemons.TypeEfficacy;
+import info.androidhive.gametest.sprites.Sprite;
+import info.androidhive.gametest.sprites.TrainerSprite;
 
 /**
  * Created by matthias on 3/22/2016.
@@ -210,13 +216,74 @@ public class DatabaseFileHandler {
                     String items = data[1];
                     String itemList[] = items.split(",");
                     Utils.pokemarktItemList.addPokemarkt(cityName);
-                    //Log.d("BLA",cityName);
                     for(String itemName : itemList){
                         CustomItem item = new CustomItem(itemName,Utils.itemDs);
                         Utils.pokemarktItemList.addItemToPokemarkt(item);
                     }
                 }
             }
+            br.close();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public static void readSpriteInfo(Context context){
+        try {
+            InputStream is = context.getAssets().open("sprite_map.txt");
+            BufferedReader br = new BufferedReader(new InputStreamReader(is,"UTF-8"));
+            String line;
+            while ((line = br.readLine()) != null) {
+                Log.d("LINE",line);
+                String objects[] = line.split(";");
+                int id = Integer.parseInt(objects[0]);
+                String location = objects[1];
+                String name = objects[2];
+                int x = (int) (Float.parseFloat(objects[3])*Utils.tileSize);
+                int y = (int) (Float.parseFloat(objects[4]) *Utils.tileSize);
+                int width = (int) (Float.parseFloat(objects[5])*Utils.tileSize);
+                int height= (int) (Float.parseFloat(objects[6])*Utils.tileSize);
+                String status = objects[7];
+
+                //int id, int tx, int ty, int width, int height, String type,String status
+
+                String pokemons = objects[8];
+
+
+                if(!pokemons.equals("empty")){
+                    MyPokemons myPokemons = new MyPokemons();
+                    String pokemonList[] = pokemons.split(",");
+                    for(String pokemonElement : pokemonList){
+                        String elementList[] = pokemonElement.split(":");
+                        String pokemonName = elementList[0];
+                        int level = Integer.parseInt(elementList[1]);
+                        PokemonSprite myPokemon = new PokemonSprite(pokemonName,Utils.ds);       // pikachu lukt wel!!!
+                        myPokemon.setLevel(level);
+                        myPokemon.setCurrentHP(myPokemon.getStats().getHp());
+                        myPokemons.addPokemon(myPokemon);
+                    }
+                    TrainerSprite trainerSprite = new TrainerSprite(id,x,y,width,height,name,status,location, context);
+                    trainerSprite.setBitmap(name, status);
+                    trainerSprite.setMyPokemons(myPokemons);
+                    trainerSprite.setScrollY(Utils.scrollCoords.get("scrollY"));
+                    trainerSprite.setScrollX(Utils.scrollCoords.get("scrollX"));
+                    trainerSprite.setAllBitmaps();
+                    Utils.allSprites.add(trainerSprite);
+                    Log.d("POKE",myPokemons.getMyPokemonByOrderNr(1).getLevel()+"");
+
+                }
+                else{
+                    Sprite currentSprite = new Sprite(id,x,y,width,height,name,location,context);
+                    currentSprite.setBitmap(name, status);
+                    currentSprite.setScrollY(Utils.scrollCoords.get("scrollY"));
+                    currentSprite.setScrollX(Utils.scrollCoords.get("scrollX"));
+                    Utils.allSprites.add(currentSprite);
+                }
+
+
+            }
+
             br.close();
         }
         catch(Exception e){

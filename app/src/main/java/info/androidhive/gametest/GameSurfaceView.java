@@ -51,13 +51,6 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 // TODO Auto-generated constructor stub
     }
 
-    public GameSurfaceView(Context context,String status) {
-        super(context);
-        setKeepScreenOn(true);
-        getHolder().addCallback(this);
-        mParent = context;
-        this.status = status;
-    }
 
     public RenderThread getmThread() {
         return mThread;
@@ -75,14 +68,14 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     public void openMapThread(SurfaceHolder holder){
 //        if(mThread!=null)
 //            mThread.quit();
-        mThread = new MapRenderThread(holder,this,status);
+        mThread = new MapRenderThread(holder,this);
         mThread.start();
         mThread.getFirstLayer().setInteractionListener(interactionListener);
     }
 
     public void pokemoncenterEntered(SurfaceHolder holder){
         Utils.scrollCoords.put("scrollX",mThread.getBackground().getScrollX());
-        Utils.scrollCoords.put("scrollY",mThread.getBackground().getScrollY()+ Renderable.tileSize);
+        Utils.scrollCoords.put("scrollY",mThread.getBackground().getScrollY()+ Utils.tileSize);
         mThread.quit();
         mThread = new BuildingInsideRenderThread(holder,this,status,"pokecenter");   // change this after
         mThread.start();
@@ -92,7 +85,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
     public void pokemarktEntered(SurfaceHolder holder){
         Utils.scrollCoords.put("scrollX",mThread.getBackground().getScrollX());
-        Utils.scrollCoords.put("scrollY",mThread.getBackground().getScrollY()+Renderable.tileSize);
+        Utils.scrollCoords.put("scrollY",mThread.getBackground().getScrollY()+Utils.tileSize);
         mThread.quit();
         mThread = new BuildingInsideRenderThread(holder,this,status,"pokemarkt");
         mThread.start();
@@ -102,7 +95,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
     public void pokemoncenterLeft(SurfaceHolder holder){
         mThread.quit();
-        mThread = new MapRenderThread(holder,this,status);
+        mThread = new MapRenderThread(holder,this);
         mThread.start();
         mThread.getFirstLayer().setInteractionListener(interactionListener);
         //mThread.setSize(getWidth(),getHeight());

@@ -1,0 +1,6 @@
+1;Sandgem_Town;bugcatcher;11;5;1;1.5;frontstanding;squirtle:10,bulbasaur:12
+1;Sandgem_Town;bugcatcher;15;8;1;1.5;leftstanding;charmander:10,ivysaur:16
+1000;Sandgem_Town;pokecenter;8;9;5;4;empty;empty
+1001;Sandgem_Town;pokecenter;20;5;5;4;empty;empty
+1002;Sandgem_Town;pokecenter;30;8;5;4;empty;empty
+1003;Sandgem_Town;pokemarkt;7;4;4;4;empty;empty

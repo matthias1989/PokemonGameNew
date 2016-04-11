@@ -43,13 +43,13 @@ public class BuildingInsideFirstLayer extends FirstLayer{
     public BuildingInsideFirstLayer(SurfaceView view, String buildingName){
         this.buildingName = buildingName;
         mParent = view;
-        if(buildingName.equals("pokecenter")) {
-            addSprite(createSprite(R.drawable.nurse_1,9*tileSize-tileSize/2,7/2*tileSize,tileSize,tileSize*3/2));
-        }
-        else if(buildingName.equals("pokemarkt")){
-            addSprite(createSprite(R.drawable.pokemarkt_seller,7*tileSize+tileSize/2,14/4*tileSize,tileSize,tileSize));
-            Log.d("HELPER","helper");
-        }
+//        if(buildingName.equals("pokecenter")) {
+//            addSprite(createSprite(R.drawable.nurse_1,9*Utils.tileSize-Utils.tileSize/2,7/2*Utils.tileSize,Utils.tileSize,Utils.tileSize*3/2));
+//        }
+//        else if(buildingName.equals("pokemarkt")){
+//            addSprite(createSprite(R.drawable.pokemarkt_seller,7*Utils.tileSize+Utils.tileSize/2,14/4*Utils.tileSize,Utils.tileSize,Utils.tileSize));
+//            Log.d("HELPER","helper");
+//        }
         //sprites.put("nurseJoy",nurseJoy);
         if(sprites!= null){
             for(Sprite sprite : sprites){
@@ -153,11 +153,11 @@ public class BuildingInsideFirstLayer extends FirstLayer{
         }
     }
 
-    public Sprite createSprite(int id,int x, int y, int desiredWidth, int desiredHeight){
-        Bitmap a = BitmapFactory.decodeResource(mParent.getResources(), id);
-        a = Bitmap.createScaledBitmap(a, desiredWidth, desiredHeight, false);
-        return new Sprite(a, x,y,tileSize,tileSize);
-    }
+//    public Sprite createSprite(int id,int x, int y, int desiredWidth, int desiredHeight){
+//        Bitmap a = BitmapFactory.decodeResource(mParent.getResources(), id);
+//        a = Bitmap.createScaledBitmap(a, desiredWidth, desiredHeight, false);
+//        return new Sprite(a, x,y,Utils.tileSize,Utils.tileSize,"inside");
+//    }
 
     public List<Sprite> getSprites() {
         return sprites;

@@ -9,8 +9,7 @@ import android.graphics.RectF;
 public abstract class Renderable
 {
     protected final RectF mRect = new RectF();
-    public static final int steps=64;
-    public static final int tileSize = 64;
+
 
     public abstract void playfield(int width, int height);
     public abstract void update(RectF dirty, double timeDelta);

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.util.Log;
 import android.view.View;
@@ -17,6 +18,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +31,8 @@ import info.androidhive.gametest.pokemons.MyPokemons;
 import info.androidhive.gametest.pokemons.PokemonDataSource;
 import info.androidhive.gametest.pokemons.PokemonSprite;
 import info.androidhive.gametest.sprites.MyAdapter;
+import info.androidhive.gametest.sprites.Sprite;
+import info.androidhive.gametest.sprites.TrainerSprite;
 
 /**
  * Created by matthias on 3/24/2016.
@@ -66,37 +70,103 @@ public class Utils {
     public static Bitmap pokeball20;
     public static Bitmap pokeball21;
 
+    public static TrainerSprite mySprite;
+
     public static Bitmap wallTile;
     public static Bitmap floorTile;
     public static Bitmap grassA;
     public static Bitmap grassB;
+    public static Bitmap exclamationMark;
 
     public static PokemonDataSource ds;
     public static ItemDataSource itemDs;
     public static PokemarktItemList pokemarktItemList = new PokemarktItemList(itemDs);
 
-    public static MyPokemons myPokemons = new MyPokemons();
+    public static List<Sprite> allSprites = new ArrayList<>();
+
+    //public static MyPokemons myPokemons = new MyPokemons();
     public static MyItems myItems = new MyItems();
     public static int myMoney;
+
     public static String currentCity;
 
     public static AssetManager assetManager;
     public static Map<String,Integer> scrollCoords;
 
     public static boolean pokemonFound = false;
+    public static boolean trainerFoundMe = false;
     public static boolean searched=false;
 
     public static boolean interactionMessageDisplayed = false;
     public static boolean menuOpened = false;
+
+    public static final int steps=64;
+    public static final int tileSize = 64;
+
+    public static int spritePosX = Utils.tileSize*8+tileSize/2; // X = 5
+    public static int spritePosY = Utils.tileSize *8; // Y  = 0
+    public static int spriteHeight = 48;
+    public static int spriteWidth = 32;
 
     public static ListView menuList;
     public static PokemonSprite selectedPokemon=null;
 
     //public static Button btnCancel;
 
+    public static void setupGame(Context context){
+        Utils.currentCity = "Sandgem_Town";
+        Utils.myMoney = 3500;
+        Utils.mySprite = new TrainerSprite(0,spritePosX,spritePosY,tileSize,tileSize*3/2,"me","frontstanding","Sandgem_Town", context);
+
+
+        Utils.scrollCoords = new HashMap<>();
+        Utils.scrollCoords.put("scrollX", 0);
+        Utils.scrollCoords.put("scrollY", -Utils.steps * 6);
+        Utils.assetManager = context.getAssets();
+
+
+
+
+        MyPokemons myPokemons = new MyPokemons();
+        PokemonSprite myPokemon = new PokemonSprite("charmander",Utils.ds);       // pikachu lukt wel!!!
+        myPokemon.setCurrentExperience(200);
+        myPokemon.setCurrentHP(myPokemon.getStats().getHp());
+        myPokemons.addPokemon(myPokemon);
+
+        PokemonSprite myPokemon2 = new PokemonSprite("sandslash",Utils.ds);       // pikachu lukt wel!!!
+        myPokemon2.setCurrentExperience(3000);
+        myPokemon2.setCurrentHP(myPokemon2.getStats().getHp());
+        myPokemons.addPokemon(myPokemon2);
+
+        PokemonSprite myPokemon3 = new PokemonSprite("pikachu",Utils.ds);       // pikachu lukt wel!!!
+        myPokemon3.setCurrentExperience(40000);
+        myPokemon3.setCurrentHP(myPokemon3.getStats().getHp());
+        myPokemons.addPokemon(myPokemon3);
+
+        PokemonSprite myPokemon4 = new PokemonSprite("squirtle",Utils.ds);       // pikachu lukt wel!!!
+        myPokemon4.setCurrentExperience(800);
+        myPokemon4.setCurrentHP(myPokemon4.getStats().getHp());
+        myPokemons.addPokemon(myPokemon4);
+
+        PokemonSprite myPokemon5 = new PokemonSprite("snorlax",Utils.ds);       // pikachu lukt wel!!!
+        myPokemon5.setCurrentExperience(3000);
+        myPokemon5.setCurrentHP(myPokemon5.getStats().getHp());
+        myPokemons.addPokemon(myPokemon5);
+
+        Utils.mySprite.setMyPokemons(myPokemons);
+    }
+    public static Bitmap createBitmap(int id,Context context){
+        Bitmap a = BitmapFactory.decodeResource(context.getResources(), id);
+        return Bitmap.createScaledBitmap(a, tileSize, tileSize*3/2, false);
+    }
+
+    public static TrainerSprite createSprite(int id,Context context){
+        Bitmap a = createBitmap(id,context);
+        return new TrainerSprite(0,Utils.spritePosX, Utils.spritePosY,spriteWidth,spriteHeight,"me","frontstanding","Sandgem_Town",context);
+    }
 
     public static Button pokemonMenu(final RelativeLayout container, final Context context){
-        final MyPokemons myPokemons = Utils.myPokemons;
+        final MyPokemons myPokemons = Utils.mySprite.getMyPokemons();
         double x= 1;
         if( context instanceof MainActivity){
 
@@ -215,7 +285,7 @@ public class Utils {
                         if(selectedPokemon==null)
                             popChoiceMenu(currentPokemon,context,container,counter,pokemonSlot);
                         else {
-                            Utils.myPokemons.switchPokemon(currentPokemon, selectedPokemon);
+                            Utils.mySprite.getMyPokemons().switchPokemon(currentPokemon, selectedPokemon);
                             selectedPokemon = null;
                             pokemonMenu(container, context); // refresh list
                         }
