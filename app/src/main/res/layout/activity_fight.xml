@@ -29,17 +29,18 @@
                 android:background="@drawable/male_oponent_hpbar"
                 android:orientation="vertical"
                 android:padding="10dp"
+                android:id="@+id/enemy_bars"
                 >
 
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:id="@+id/wild_info_container"
+                    android:id="@+id/enemy_info_container"
                     >
 
                     <TextView
-                        android:id="@+id/wild_info"
+                        android:id="@+id/enemy_info"
                         android:text="NAME"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -52,7 +53,7 @@
                 </RelativeLayout>
 
                 <ProgressBar
-                    android:id="@+id/wild_hp"
+                    android:id="@+id/enemy_hp"
                     style="@android:style/Widget.ProgressBar.Horizontal"
                     android:layout_width="73dp"
                     android:layout_height="8dp"
@@ -69,6 +70,7 @@
                 android:layout_marginBottom="60dp"
                 android:background="@drawable/male_own_hpbar"
                 android:orientation="vertical"
+                android:id="@+id/my_bars"
                 >
 
                 <RelativeLayout

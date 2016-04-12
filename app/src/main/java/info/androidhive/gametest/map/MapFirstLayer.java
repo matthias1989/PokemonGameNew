@@ -27,8 +27,8 @@ public class MapFirstLayer extends FirstLayer {
 
     //private List<Sprite> sprites = new ArrayList<>();
     private SurfaceView mParent;
-    private int scrollX = Utils.scrollCoords.get("scrollX");
-    private int scrollY = Utils.scrollCoords.get("scrollY");
+    private int scrollX = Utils.scrollX;
+    private int scrollY = Utils.scrollY;
     private int pokecenterPosX;
     private int pokecenterPosY;
     private int width;
@@ -56,8 +56,15 @@ public class MapFirstLayer extends FirstLayer {
         paint.setStyle(Paint.Style.FILL);
         paint.setTextSize(35);
 
-        Log.d("SCROLL",scrollY+"");
+        //Log.d("SCROLL",scrollY+"");
 
+
+        for(Sprite sprite : Utils.allSprites) {
+            if(!sprite.getLocation().contains("Inside")) {
+                sprite.setScrollY(Utils.scrollY);
+                sprite.setScrollX(Utils.scrollX);
+            }
+        }
 
         for(Sprite sprite : Utils.allSprites){
             sprite.update();
@@ -78,7 +85,8 @@ public class MapFirstLayer extends FirstLayer {
     @Override
     public void draw(Canvas c) {
         for(Sprite sprite : Utils.allSprites) {
-             sprite.draw(c);
+            if(sprite!=null && !sprite.getLocation().contains("Inside"))
+                sprite.draw(c);
         }
 
         if(markX>0){
@@ -125,8 +133,8 @@ public class MapFirstLayer extends FirstLayer {
                 trainerY += Utils.tileSize / 2;
             else if (destY < trainerY)
                 trainerY -= Utils.tileSize / 2;
-            currentSprite.setX(trainerX + currentSprite.getScrollX() + Utils.tileSize / 2); // trainerX is destermined by X, scrollX and the extra
-            currentSprite.setY(trainerY + currentSprite.getScrollY() + Utils.tileSize);
+            currentSprite.setX(trainerX + currentSprite.getScrollX());
+            currentSprite.setY(trainerY + currentSprite.getScrollY());
 
             // All other cases, and other sprites
             if (currentSprite.getStatus().startsWith("front")) {
@@ -205,37 +213,6 @@ public class MapFirstLayer extends FirstLayer {
         //Log.d("scrollY",scrollY+"<->"+sprites.get("pokecenter").getScrollY());
     }
 
-    @Override
-    public List<Sprite> getSprites() {
-        return Utils.allSprites;
-    }
-
-
-//    public Sprite createSprite(int id, int x, int y, int width, int height,String type,String status){
-//        Bitmap a = createBitmap(id,width,height);
-//
-//        Sprite sprite = new Sprite(0,a, x,y,width,height,type);
-//        sprite.setStatus(status);
-//        sprite.setScrollX(scrollX);
-//        sprite.setScrollY(scrollY);
-//        return sprite;
-//    }
-
-    private Bitmap createBitmap(int id,int width,int height){
-        Bitmap a = BitmapFactory.decodeResource(mParent.getResources(), id);
-        return Bitmap.createScaledBitmap(a, width, height, false);
-    }
-
-    @Override
-    public void addSprite(Sprite sprite) {
-        Utils.allSprites.add(sprite);
-    }
-
-    @Override
-    public void setSprites(List<Sprite> sprites) {
-        Utils.allSprites = sprites;
-    }
-
 
     public int getWidth() {
         return width;
@@ -259,8 +236,8 @@ public class MapFirstLayer extends FirstLayer {
         this.destY = destY;
         this.trainerX = trainerX;
         this.trainerY = trainerY;
-        markX=trainerX-Utils.tileSize/2;
-        markY=trainerY-(int)(1.5*Utils.tileSize);
+        markX=trainerX-Utils.tileSize;
+        markY=trainerY-(int)(3*Utils.tileSize);
         timeCounter = 0;
         timeCounter2 = 0;
         strCounter = 0;

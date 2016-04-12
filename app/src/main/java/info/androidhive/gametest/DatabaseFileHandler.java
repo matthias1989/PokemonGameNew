@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -230,6 +231,7 @@ public class DatabaseFileHandler {
     }
 
     public static void readSpriteInfo(Context context){
+        Utils.allSprites = new ArrayList<>();
         try {
             InputStream is = context.getAssets().open("sprite_map.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is,"UTF-8"));
@@ -258,7 +260,7 @@ public class DatabaseFileHandler {
                         String elementList[] = pokemonElement.split(":");
                         String pokemonName = elementList[0];
                         int level = Integer.parseInt(elementList[1]);
-                        PokemonSprite myPokemon = new PokemonSprite(pokemonName,Utils.ds);       // pikachu lukt wel!!!
+                        PokemonSprite myPokemon = new PokemonSprite(pokemonName,Utils.ds);
                         myPokemon.setLevel(level);
                         myPokemon.setCurrentHP(myPokemon.getStats().getHp());
                         myPokemons.addPokemon(myPokemon);
@@ -268,7 +270,7 @@ public class DatabaseFileHandler {
                     trainerSprite.setMyPokemons(myPokemons);
                     trainerSprite.setScrollY(Utils.scrollCoords.get("scrollY"));
                     trainerSprite.setScrollX(Utils.scrollCoords.get("scrollX"));
-                    trainerSprite.setAllBitmaps();
+                    //trainerSprite.setAllBitmaps();
                     Utils.allSprites.add(trainerSprite);
                     Log.d("POKE",myPokemons.getMyPokemonByOrderNr(1).getLevel()+"");
 

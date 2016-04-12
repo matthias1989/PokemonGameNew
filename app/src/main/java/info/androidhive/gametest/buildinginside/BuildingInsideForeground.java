@@ -1,22 +1,15 @@
 package info.androidhive.gametest.buildinginside;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.Log;
 import android.view.SurfaceView;
 
-import java.util.Random;
-
 import info.androidhive.gametest.GameSurfaceView;
 import info.androidhive.gametest.Utils;
 import info.androidhive.gametest.abstractClasses.Foreground;
-import info.androidhive.gametest.R;
 import info.androidhive.gametest.sprites.Sprite;
-import info.androidhive.gametest.pokemons.PokemonSprite;
 import info.androidhive.gametest.sprites.TrainerSprite;
 
 /**
@@ -25,25 +18,8 @@ import info.androidhive.gametest.sprites.TrainerSprite;
 
 public class BuildingInsideForeground extends Foreground
 {
-    private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-    private Random random = new Random();
-
-    public static PokemonSprite pokemonSprite;
-
     private GameSurfaceView mParent;
-
-    private int requiredBorderSpace=32;
-
-    private int spriteHeight = 48;
-    private int spriteWidth = 32;
-
-    private float mFieldWidth;
-    private float mFieldHeight;
-
     private String buildingName;
-
-
     private String status;
 
 
@@ -54,12 +30,13 @@ public class BuildingInsideForeground extends Foreground
     {
         this.buildingName = buildingName;
         mParent = (GameSurfaceView) view;
-        //mySprite = new Sprite(BitmapFactory.decodeResource(getResources(), R.drawable.front_standing), 100, 100);
         init();
         this.status = status;
-
-
-
+        if(buildingName.equals("pokecenter"))
+            Utils.currentEnvironment = "inside_pokecenter";
+        else if(buildingName.equals("pokemarkt"))
+            Utils.currentEnvironment = "inside_pokemarkt";
+        //Utils.currentEnvironment = "inside_pokecenter";
     }
 
     public boolean isActionStopped() {
@@ -75,9 +52,7 @@ public class BuildingInsideForeground extends Foreground
     @Override
     public void playfield(int width, int height)
     {
-        //mSize = width / 7.0f;
-        mFieldWidth = width;
-        mFieldHeight = height;
+
     }
 
     @Override
@@ -232,13 +207,15 @@ public class BuildingInsideForeground extends Foreground
 
     private boolean isBeforeDoor(int moveX, int moveY){
         BuildingInsideBackground pokecenterBackground= (BuildingInsideBackground) mParent.getmThread().getBackground();
-        int doorPosInPokemonCenterX=Utils.tileSize*7+Utils.tileSize/2;
+        int doorPosInPokemonCenterX=Utils.tileSize*8;
         int doorPosInPokemonCenterY=Utils.tileSize*9;
 
         int x1 = -pokecenterBackground.getScrollX() - moveX+doorPosInPokemonCenterX;
         int x2 = x1 + Utils.tileSize;
         int y =  -pokecenterBackground.getScrollY() - moveY+doorPosInPokemonCenterY;
-        if( ((x1==Utils.spritePosX) || (x2==Utils.spritePosX)) && (y==Utils.spritePosY)){
+
+        Log.d("Coords",x1+","+Utils.mySprite.getX());
+        if( ((x1==Utils.mySprite.getX()) || (x2==Utils.mySprite.getX())) && (y==Utils.mySprite.getY())){
             return true;
         }
         return false;
@@ -251,11 +228,11 @@ public class BuildingInsideForeground extends Foreground
     public boolean stepAllowed(int moveX, int moveY){
         BuildingInsideBackground buidingInsideBackground= (BuildingInsideBackground) mParent.getmThread().getBackground();
         int x1 = -buidingInsideBackground.getScrollX() - moveX +buidingInsideBackground.getStartPosX();
-        int y1 = -buidingInsideBackground.getScrollY() - moveY+buidingInsideBackground.getStartPosY()+Utils.steps;
-        int x2 = x1 + (int) buidingInsideBackground.getmFieldWidth();
-        int y2 = y1 + (int) buidingInsideBackground.getmFieldHeight()-Utils.steps;
+        int y1 = -buidingInsideBackground.getScrollY() - moveY+buidingInsideBackground.getStartPosY();
+        int x2 = x1 + (int) buidingInsideBackground.getmFieldWidth()+Utils.tileSize;
+        int y2 = y1 + (int) buidingInsideBackground.getmFieldHeight();
         Rect rect = new Rect(x1,y1,x2,y2);
-        if(!rect.intersect(Utils.spritePosX,Utils.spritePosY,Utils.spritePosX,Utils.spritePosY)){
+        if(!rect.intersect(Utils.mySprite.getX(),Utils.mySprite.getY(),Utils.mySprite.getX(),Utils.mySprite.getY())){
             if (isBeforeDoor(moveX,moveY))
                 return true;
             else
@@ -267,7 +244,7 @@ public class BuildingInsideForeground extends Foreground
             x2 = x1 +  6 * Utils.tileSize;
             y2 = y1 + 3 * Utils.tileSize;
             rect = new Rect(x1,y1,x2,y2);
-            if(rect.intersect(Utils.spritePosX,Utils.spritePosY,Utils.spritePosX+spriteWidth,Utils.spritePosY+spriteHeight))
+            if(rect.intersect(Utils.mySprite.getX(),Utils.mySprite.getY(),Utils.mySprite.getX(),Utils.mySprite.getY()))
                 return false;
         }
 
@@ -298,12 +275,15 @@ public class BuildingInsideForeground extends Foreground
     }
     @Override
     public String checkInteractionPossible() {
+        Sprite seller = null;
+        for(Sprite sprite: Utils.allSprites){
+            if(sprite.getName().equals("seller"))
+                seller = sprite;
+        }
+        int helperPosX = seller.getX() - seller.getScrollX();
+        int helperPosY = seller.getY() - seller.getScrollY();
 
-        Sprite helper = mParent.getmThread().getFirstLayer().getSprites().get(0);
-        int helperPosX = helper.getX() - helper.getScrollX();
-        int helperPosY = helper.getY() - helper.getScrollY();
-
-        if((helperPosX==Utils.spritePosX) && ((helperPosY+Utils.tileSize*2)==Utils.spritePosY) && ((TrainerSprite)getSprite()).getStatus().startsWith("back")){
+        if((helperPosX==Utils.mySprite.getX()) && ((helperPosY+Utils.tileSize*2)==Utils.mySprite.getY()) && ((TrainerSprite)getSprite()).getStatus().startsWith("back")){
             return buildingName;
         }
         return "";
@@ -311,6 +291,11 @@ public class BuildingInsideForeground extends Foreground
 
     @Override
     public void doInteraction() {
+    }
+
+    @Override
+    public void checkIfSeenByNPC() {
+
     }
 
 }

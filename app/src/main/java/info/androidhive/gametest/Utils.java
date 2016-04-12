@@ -39,9 +39,10 @@ import info.androidhive.gametest.sprites.TrainerSprite;
  */
 public class Utils {
 
-    public static Bitmap wildPokemonBm;
+    public static Bitmap enemyPokemonBm;
+    public static Bitmap enemyTrainerFrontBm;
     public static Bitmap myPokemonBm;
-    public static Bitmap wildPlatform;
+    public static Bitmap enemyPlatform;
     public static Bitmap myPlatform;
     public static Bitmap player1;
     public static Bitmap player2;
@@ -82,13 +83,16 @@ public class Utils {
     public static ItemDataSource itemDs;
     public static PokemarktItemList pokemarktItemList = new PokemarktItemList(itemDs);
 
-    public static List<Sprite> allSprites = new ArrayList<>();
+    public static List<Sprite> allSprites;
 
     //public static MyPokemons myPokemons = new MyPokemons();
     public static MyItems myItems = new MyItems();
     public static int myMoney;
 
     public static String currentCity;
+    public static String currentEnvironment;
+    public static TrainerSprite currentTrainer;
+    public static PokemonSprite currentWildPokemon;
 
     public static AssetManager assetManager;
     public static Map<String,Integer> scrollCoords;
@@ -103,10 +107,8 @@ public class Utils {
     public static final int steps=64;
     public static final int tileSize = 64;
 
-    public static int spritePosX = Utils.tileSize*8+tileSize/2; // X = 5
-    public static int spritePosY = Utils.tileSize *8; // Y  = 0
-    public static int spriteHeight = 48;
-    public static int spriteWidth = 32;
+    public static int scrollX=0;
+    public static int scrollY=0;
 
     public static ListView menuList;
     public static PokemonSprite selectedPokemon=null;
@@ -116,30 +118,30 @@ public class Utils {
     public static void setupGame(Context context){
         Utils.currentCity = "Sandgem_Town";
         Utils.myMoney = 3500;
-        Utils.mySprite = new TrainerSprite(0,spritePosX,spritePosY,tileSize,tileSize*3/2,"me","frontstanding","Sandgem_Town", context);
+        Utils.mySprite = new TrainerSprite(0,Utils.tileSize*8,Utils.tileSize*8,tileSize,(int) (tileSize*1.5),"me","frontstanding","Sandgem_Town", context);
+        Utils.mySprite.setBitmap("me", "frontstanding");
+
+        //TrainerSprite trainerSprite = new TrainerSprite(id,x,y,width,height,name,status,location, context);
 
 
-        Utils.scrollCoords = new HashMap<>();
-        Utils.scrollCoords.put("scrollX", 0);
-        Utils.scrollCoords.put("scrollY", -Utils.steps * 6);
         Utils.assetManager = context.getAssets();
 
 
 
 
         MyPokemons myPokemons = new MyPokemons();
-        PokemonSprite myPokemon = new PokemonSprite("charmander",Utils.ds);       // pikachu lukt wel!!!
-        myPokemon.setCurrentExperience(200);
-        myPokemon.setCurrentHP(myPokemon.getStats().getHp());
-        myPokemons.addPokemon(myPokemon);
+        PokemonSprite myPokemon1 = new PokemonSprite("pikachu",Utils.ds);       // pikachu lukt wel!!!
+        myPokemon1.setCurrentExperience(40000);
+        myPokemon1.setCurrentHP(myPokemon1.getStats().getHp());
+        myPokemons.addPokemon(myPokemon1);
 
-        PokemonSprite myPokemon2 = new PokemonSprite("sandslash",Utils.ds);       // pikachu lukt wel!!!
-        myPokemon2.setCurrentExperience(3000);
+        PokemonSprite myPokemon2 = new PokemonSprite("charmander",Utils.ds);       // pikachu lukt wel!!!
+        myPokemon2.setCurrentExperience(200);
         myPokemon2.setCurrentHP(myPokemon2.getStats().getHp());
         myPokemons.addPokemon(myPokemon2);
 
-        PokemonSprite myPokemon3 = new PokemonSprite("pikachu",Utils.ds);       // pikachu lukt wel!!!
-        myPokemon3.setCurrentExperience(40000);
+        PokemonSprite myPokemon3 = new PokemonSprite("sandslash",Utils.ds);       // pikachu lukt wel!!!
+        myPokemon3.setCurrentExperience(3000);
         myPokemon3.setCurrentHP(myPokemon3.getStats().getHp());
         myPokemons.addPokemon(myPokemon3);
 
@@ -155,15 +157,9 @@ public class Utils {
 
         Utils.mySprite.setMyPokemons(myPokemons);
     }
-    public static Bitmap createBitmap(int id,Context context){
-        Bitmap a = BitmapFactory.decodeResource(context.getResources(), id);
-        return Bitmap.createScaledBitmap(a, tileSize, tileSize*3/2, false);
-    }
 
-    public static TrainerSprite createSprite(int id,Context context){
-        Bitmap a = createBitmap(id,context);
-        return new TrainerSprite(0,Utils.spritePosX, Utils.spritePosY,spriteWidth,spriteHeight,"me","frontstanding","Sandgem_Town",context);
-    }
+
+
 
     public static Button pokemonMenu(final RelativeLayout container, final Context context){
         final MyPokemons myPokemons = Utils.mySprite.getMyPokemons();

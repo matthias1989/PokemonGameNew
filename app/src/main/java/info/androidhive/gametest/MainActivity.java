@@ -22,12 +22,10 @@ import java.util.HashMap;
 import java.util.List;
 
 import info.androidhive.gametest.abstractClasses.Foreground;
-import info.androidhive.gametest.abstractClasses.Renderable;
 import info.androidhive.gametest.buildinginside.BuildingInsideFirstLayer;
 import info.androidhive.gametest.fight.FightActivity;
 import info.androidhive.gametest.items.CustomItem;
 import info.androidhive.gametest.map.MapForeground;
-import info.androidhive.gametest.map.MapRenderThread;
 import info.androidhive.gametest.pokemons.Move;
 import info.androidhive.gametest.pokemons.PokemonSprite;
 import info.androidhive.gametest.sprites.MyAdapter;
@@ -74,8 +72,6 @@ public class MainActivity extends Activity implements InteractionListener
         DatabaseFileHandler.readItemData(this);
         DatabaseFileHandler.readItemData2(this);
 
-        Utils.setupGame(this);
-        DatabaseFileHandler.readSpriteInfo(this);
 
 
         setContentView(R.layout.activity_main);
@@ -94,6 +90,13 @@ public class MainActivity extends Activity implements InteractionListener
         menuControls = (RelativeLayout) findViewById(R.id.menu_controls);
 
         context = this;
+
+        Utils.scrollCoords = new HashMap<>();
+        Utils.scrollCoords.put("scrollX", 0);
+        Utils.scrollCoords.put("scrollY", -Utils.steps * 6);
+
+        Utils.setupGame(this);
+        DatabaseFileHandler.readSpriteInfo(this);
     }
 
 
@@ -101,6 +104,9 @@ public class MainActivity extends Activity implements InteractionListener
     @Override
     protected void onStart() {
         super.onStart();
+
+
+        Utils.currentEnvironment = "outside";
 
         if(!getValueForKey("scrollX").equals("VALUE NOT SAVED")){
             saveKeyValueString("scrollXBG","VALUE NOT SAVED");
@@ -111,6 +117,15 @@ public class MainActivity extends Activity implements InteractionListener
         menuContainer= (RelativeLayout) findViewById(R.id.menu_container);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        /*int scrollX = view.getmThread().getBackground().getScrollX();
+        int scrollY = view.getmThread().getBackground().getScrollY();
+        Utils.scrollCoords = new HashMap<>();
+        Utils.scrollCoords.put("scrollX", scrollX);
+        Utils.scrollCoords.put("scrollY", scrollY);*/
+    }
 
     private void setupControllers(){
         btnUp = (Button) findViewById(R.id.up);
@@ -122,7 +137,7 @@ public class MainActivity extends Activity implements InteractionListener
                     view.getmThread().getForeground().goUp();
 
                 if (Utils.pokemonFound) {
-                    startFightActivity();
+                    startFightActivity(false);
                 }
 
             }
@@ -136,7 +151,7 @@ public class MainActivity extends Activity implements InteractionListener
                 if (view.getmThread().getForeground() != null && !Utils.trainerFoundMe)
                     view.getmThread().getForeground().goDown();
                 if (Utils.pokemonFound) {
-                    startFightActivity();
+                    startFightActivity(false);
                 }
 
             }
@@ -150,7 +165,7 @@ public class MainActivity extends Activity implements InteractionListener
                 if (view.getmThread().getForeground() != null && !Utils.trainerFoundMe)
                     view.getmThread().getForeground().goLeft();
                 if (Utils.pokemonFound) {
-                    startFightActivity();
+                    startFightActivity(false);
                 }
             }
         });
@@ -163,7 +178,7 @@ public class MainActivity extends Activity implements InteractionListener
                 if (view.getmThread().getForeground() != null && !Utils.trainerFoundMe)
                     view.getmThread().getForeground().goRight();
                 if (Utils.pokemonFound) {
-                    startFightActivity();
+                    startFightActivity(false);
                 }
             }
         });
@@ -251,7 +266,7 @@ public class MainActivity extends Activity implements InteractionListener
                             break;
                     }
                     if (Utils.pokemonFound) {
-                        startFightActivity();
+                        startFightActivity(false);
                     }
                     mHandler.postDelayed(this, 200);
                 }
@@ -259,17 +274,20 @@ public class MainActivity extends Activity implements InteractionListener
         };
     }
 
-    public void startFightActivity(){
+    public void startFightActivity(boolean isTrainer){
 
         int scrollX = view.getmThread().getBackground().getScrollX();
         int scrollY = view.getmThread().getBackground().getScrollY();
+        Utils.scrollX = scrollX;
+        Utils.scrollY = scrollY;
         String status = ((TrainerSprite)view.getmThread().getForeground().getSprite()).getStatus();
 
-        saveKeyValueString("status",status);
+        saveKeyValueString("status", status);
 
         Utils.scrollCoords.put("scrollX", scrollX);
         Utils.scrollCoords.put("scrollY",scrollY);
         Intent fightIntent = new Intent(this,FightActivity.class);
+        fightIntent.putExtra("isTrainer",isTrainer);
 
         startActivityForResult(fightIntent, 001);
         overridePendingTransition(R.anim.fadein,R.anim.fadeout);
@@ -291,9 +309,17 @@ public class MainActivity extends Activity implements InteractionListener
             {
                 Log.d("FIGHT","Run away");
             }
-            Utils.pokemonFound = false;
-            MapForeground.pokemonSprite =null;
-            Utils.searched = false;
+
+            if(Utils.currentTrainer!=null){
+                Utils.currentTrainer.setDoneFighting(true);
+                Utils.currentTrainer = null;
+                Utils.trainerFoundMe = false;
+            }
+            else if(Utils.currentWildPokemon!= null){
+                Utils.currentWildPokemon =null;
+                Utils.pokemonFound = false;
+                Utils.searched = false;
+            }
             //view.openMapThread(view.getHolder());
         }
     }
@@ -461,6 +487,7 @@ public class MainActivity extends Activity implements InteractionListener
                     case "EXIT MENU":
                         mainLayout.removeView(Utils.menuList);
                         Utils.menuOpened = false;
+
                         break;
                     case "QUIT GAME":
                         ((Activity) context).finish();
@@ -477,6 +504,8 @@ public class MainActivity extends Activity implements InteractionListener
     }
 
     private static void showMyPokemon(){
+        Utils.scrollX = view.getmThread().getBackground().getScrollX();
+        Utils.scrollY = view.getmThread().getBackground().getScrollY();
         mainLayout.removeAllViewsInLayout();
         controllerContainer.removeAllViewsInLayout();
         Utils.pokemonMenu(mainLayout, context);
@@ -566,11 +595,12 @@ public class MainActivity extends Activity implements InteractionListener
 
     @Override
     public void trainerFightStarted(TrainerSprite currentTrainer) {
-
+        startFightActivity(true);
+        Utils.currentTrainer = currentTrainer;
         Utils.trainerFoundMe = false;
         currentTrainer.setDoneFighting(true);
         Log.d("FIGHT", "fight started with " + currentTrainer.getMyPokemons().getMyPokemonByOrderNr(0).getName() );
 
-        //startFightActivity();
+
     }
 }

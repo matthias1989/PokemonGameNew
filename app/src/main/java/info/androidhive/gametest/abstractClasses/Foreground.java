@@ -27,4 +27,6 @@ abstract public class Foreground extends info.androidhive.gametest.abstractClass
 
     abstract public void doInteraction();
 
+    abstract public void checkIfSeenByNPC();
+
 }

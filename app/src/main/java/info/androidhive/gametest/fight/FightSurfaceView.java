@@ -50,10 +50,10 @@ public class FightSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     }
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        mThread = new FightRenderThread(holder,this);
+        mThread = new FightRenderThread(holder,this,fightListener);
         mThread.setRunning(true);
         mThread.start();
-        mThread.getFightRenderable().setFightListener(fightListener);
+        //mThread.getFightRenderable().setFightListener(fightListener);
 
     }
 

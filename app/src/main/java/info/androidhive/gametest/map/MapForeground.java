@@ -30,8 +30,6 @@ public class MapForeground extends Foreground
 
     private Random random = new Random();
 
-    public static PokemonSprite pokemonSprite;
-
     private GameSurfaceView mParent;
     private MapBackground background;
     private MapFirstLayer firstLayer;
@@ -57,7 +55,7 @@ public class MapForeground extends Foreground
     {
         mParent = (GameSurfaceView) view;
         init();
-
+        Utils.currentEnvironment = "outside";
     }
 
     public boolean isActionStopped() {
@@ -85,8 +83,8 @@ public class MapForeground extends Foreground
         Utils.mySprite.update();
         if(!Utils.searched){
             if(background != null) {
-                int col = (background.getScrollX()+Utils.spritePosX-Utils.steps)/Utils.tileSize;
-                int row = (background.getScrollY()+Utils.spritePosY)/Utils.tileSize;
+                int col = (background.getScrollX()+Utils.mySprite.getX()-Utils.steps)/Utils.tileSize;
+                int row = (background.getScrollY()+Utils.mySprite.getY())/Utils.tileSize;
                 if (background.getBackgroundTile(row,col) == 'g' && !Utils.pokemonFound) {
                     if(!Utils.pokemonFound) {
                         appearPokemon();
@@ -125,6 +123,7 @@ public class MapForeground extends Foreground
         Utils.mySprite.draw(c);
 
 
+
     }
     public  void goUp(){
         // save current data first
@@ -143,8 +142,8 @@ public class MapForeground extends Foreground
             background = (MapBackground) mParent.getmThread().getBackground();
             firstLayer = (MapFirstLayer) mParent.getmThread().getFirstLayer();
 
-            int col = (background.getScrollX() + Utils.spritePosX) / Utils.tileSize;
-            int row = (background.getScrollY() + Utils.spritePosY - Utils.steps) / Utils.tileSize;
+            int col = (background.getScrollX() + Utils.mySprite.getX()) / Utils.tileSize;
+            int row = (background.getScrollY() + Utils.mySprite.getY() - Utils.steps) / Utils.tileSize;
             beforeDoor = false;
             if (background.getBackgroundTile(row, col) != '-') {
                 if (stepAllowed(0, -Utils.tileSize)) {
@@ -159,7 +158,8 @@ public class MapForeground extends Foreground
                     else if (spriteForm.equals("pokemarkt"))
                         enterPokemarkt();
                 }
-                checkIfSeenByNPC();
+                if(Utils.currentEnvironment.equals("outside"))
+                    checkIfSeenByNPC();
             }
 
         }
@@ -180,8 +180,8 @@ public class MapForeground extends Foreground
             background = (MapBackground) mParent.getmThread().getBackground();
             firstLayer = (MapFirstLayer) mParent.getmThread().getFirstLayer();
 
-            int col = (background.getScrollX() + Utils.spritePosX) / Utils.tileSize;
-            int row = (background.getScrollY() + Utils.spritePosY + Utils.steps) / Utils.tileSize;
+            int col = (background.getScrollX() + Utils.mySprite.getX()) / Utils.tileSize;
+            int row = (background.getScrollY() + Utils.mySprite.getY() + Utils.steps) / Utils.tileSize;
 
             if (background.getBackgroundTile(row, col) != '-') {
                 if (stepAllowed(0, Utils.tileSize)) {
@@ -190,7 +190,8 @@ public class MapForeground extends Foreground
                     Utils.searched = false;
                 }
             }
-            checkIfSeenByNPC();
+            if(Utils.currentEnvironment.equals("outside"))
+                checkIfSeenByNPC();
 
         }
     }
@@ -210,8 +211,8 @@ public class MapForeground extends Foreground
 
             background = (MapBackground) mParent.getmThread().getBackground();
             firstLayer = (MapFirstLayer) mParent.getmThread().getFirstLayer();
-            int col = (background.getScrollX() + Utils.spritePosX - Utils.steps) / Utils.tileSize;
-            int row = (background.getScrollY() + Utils.spritePosY) / Utils.tileSize;
+            int col = (background.getScrollX() + Utils.mySprite.getX() - Utils.steps) / Utils.tileSize;
+            int row = (background.getScrollY() + Utils.mySprite.getY()) / Utils.tileSize;
 
             if (background.getBackgroundTile(row, col) != '-') {
                 if (stepAllowed(-Utils.tileSize, 0)) {
@@ -220,7 +221,8 @@ public class MapForeground extends Foreground
                     Utils.searched = false;
                 }
             }
-            checkIfSeenByNPC();
+            if(Utils.currentEnvironment.equals("outside"))
+                checkIfSeenByNPC();
 
         }
     }
@@ -246,8 +248,8 @@ public class MapForeground extends Foreground
             background = (MapBackground) mParent.getmThread().getBackground();
             firstLayer = (MapFirstLayer) mParent.getmThread().getFirstLayer();
 
-            int col = (background.getScrollX() + Utils.spritePosX + Utils.steps) / Utils.tileSize;
-            int row = (background.getScrollY() + Utils.spritePosY) / Utils.tileSize;
+            int col = (background.getScrollX() + Utils.mySprite.getX() + Utils.steps) / Utils.tileSize;
+            int row = (background.getScrollY() + Utils.mySprite.getY()) / Utils.tileSize;
 
 
             if (background.getBackgroundTile(row, col) != '-') {
@@ -257,7 +259,8 @@ public class MapForeground extends Foreground
                     Utils.searched = false;
                 }
             }
-            checkIfSeenByNPC();
+            if(Utils.currentEnvironment.equals("outside"))
+                checkIfSeenByNPC();
         }
 
 
@@ -268,8 +271,8 @@ public class MapForeground extends Foreground
     private void isBeforeDoor(int newScrollX, int newScrollY,Sprite sprite,int doorPosInBuildingX, int doorPosInBuildingY){
 
 
-        int x = (int) sprite.getX() - Utils.spritePosX -doorPosInBuildingX;
-        int y = (int) sprite.getY() - Utils.spritePosY -doorPosInBuildingY;
+        int x = (int) sprite.getX() - Utils.mySprite.getX() -doorPosInBuildingX;
+        int y = (int) sprite.getY() - Utils.mySprite.getY() -doorPosInBuildingY;
         if((x==newScrollX) && (y==newScrollY)){
             beforeDoor = true;
             spriteForm = sprite.getName();
@@ -287,26 +290,23 @@ public class MapForeground extends Foreground
     }
 
     public boolean stepAllowed(int moveX,int moveY){
-        List<Sprite> sprites = mParent.getmThread().getFirstLayer().getSprites();
-
-        for (Sprite sprite : sprites)
+        for (Sprite sprite : Utils.allSprites)
         {
-            // pokecenter
-            int x1 = firstLayer.getScrollX() +moveX;
+            int x1 = firstLayer.getScrollX() +moveX-Utils.tileSize/2;
             int y1 = firstLayer.getScrollY() +moveY;
             int x2 = x1 + (int) sprite.getWidth();
-            int y2 = y1 + (int) sprite.getHeight();
+            int y2 = y1 + (int) sprite.getHeight()-Utils.tileSize;
             Rect rect = new Rect(x1,y1,x2,y2);
 
 
             // char
-            int posX = (int) sprite.getX()-Utils.spritePosX;
-            int posY = (int) sprite.getY()-Utils.spritePosY;
+            int posX = (int) sprite.getX()-Utils.mySprite.getX();
+            int posY = (int) sprite.getY()-Utils.mySprite.getY();
             /*if(sprite.getType().equals("NPC")) {
                 Log.d("POS_NPC2", x1 + "-" + x2 + "," + y1 + "-" + y2);
                 Log.d("POS_ME2", posX+ "," + posY);
             }*/
-            if(rect.intersect(posX, posY, posX, posY)){
+            if(rect.intersects(posX, posY, posX, posY)){
                 int doorPosInBuildingX = 0;
                 int doorPosInBuildingY = 0;
                 if(sprite.getName().equals("pokecenter")) {
@@ -334,16 +334,16 @@ public class MapForeground extends Foreground
         if (getal < 16) {
             Utils.pokemonFound = true;
             if (getal < 8) {
-                pokemonSprite = new PokemonSprite("rattata", Utils.ds);
+                Utils.currentWildPokemon = new PokemonSprite("rattata", Utils.ds);
             } else {
                 if (getal < 14) {
-                    pokemonSprite = new PokemonSprite("pidgey",Utils.ds);
+                    Utils.currentWildPokemon = new PokemonSprite("pidgey",Utils.ds);
                 } else {
-                    pokemonSprite = new PokemonSprite("spearow",Utils.ds);
+                    Utils.currentWildPokemon = new PokemonSprite("spearow",Utils.ds);
                 }
             }
-            pokemonSprite.setCurrentExperience(810000);
-            pokemonSprite.setCurrentHP(pokemonSprite.getStats().getHp());
+            Utils.currentWildPokemon.setCurrentExperience(810000);
+            Utils.currentWildPokemon.setCurrentHP(Utils.currentWildPokemon.getStats().getHp());
             //pokemonSprite.setLevel(38);
         }
         else {
@@ -395,14 +395,13 @@ public class MapForeground extends Foreground
     }
 
     public void checkIfSeenByNPC(){
-        List<Sprite> sprites = mParent.getmThread().getFirstLayer().getSprites();
 
-        for(Sprite sprite: sprites){
+        for(Sprite sprite: Utils.allSprites){
+
             if(sprite.getName().equals("bugcatcher") && !((TrainerSprite)sprite).isDoneFighting()){
-
                 TrainerSprite trainerSprite = (TrainerSprite) sprite;
-                int x1 = sprite.getX() - sprite.getScrollX()-Utils.tileSize/2;
-                int y1 = sprite.getY() - sprite.getScrollY()-Utils.tileSize;
+                int x1 = sprite.getX() - sprite.getScrollX();
+                int y1 = sprite.getY() - sprite.getScrollY();
 
                 if(trainerSprite.getStatus().startsWith("front")){
                     checkIfSeenByNPCHelp(x1,y1,x1,y1+Utils.tileSize*5,"front",trainerSprite);
@@ -421,30 +420,30 @@ public class MapForeground extends Foreground
         MapFirstLayer firstLayer= (MapFirstLayer) mParent.getmThread().getFirstLayer();
         switch(status){
             case "front":
-                if(Utils.spritePosX==x1 && Utils.spritePosX==x2 && Utils.spritePosY >= y1 && Utils.spritePosY <= y2){
+                if(Utils.mySprite.getX()==x1 && Utils.mySprite.getX()==x2 && Utils.mySprite.getY() >= y1 && Utils.mySprite.getY() <= y2){
                     Utils.trainerFoundMe = true;
-                    firstLayer.discoveredByTrainer(x1,y1,x1,Utils.spritePosY-Utils.tileSize,trainerSprite);
+                    firstLayer.discoveredByTrainer(x1,y1,x1,Utils.mySprite.getY()-Utils.tileSize,trainerSprite);
                     Log.d("FOUND","found!");
                 }
                 break;
             case "back":
-                if(Utils.spritePosX==x1 && Utils.spritePosX==x2 && Utils.spritePosY >= y2 && Utils.spritePosY <= y1){
+                if(Utils.mySprite.getX()==x1 && Utils.mySprite.getX()==x2 && Utils.mySprite.getY() >= y2 && Utils.mySprite.getY() <= y1){
                     Utils.trainerFoundMe = true;
-                    firstLayer.discoveredByTrainer(x1, y1,x1,Utils.spritePosY+Utils.tileSize,trainerSprite);
+                    firstLayer.discoveredByTrainer(x1, y1,x1,Utils.mySprite.getY()+Utils.tileSize,trainerSprite);
                     Log.d("FOUND","found!");
                 }
                 break;
             case "left":
-                if(Utils.spritePosX>=x2 && Utils.spritePosX<=x1 && Utils.spritePosY == y1 && Utils.spritePosY == y2){
+                if(Utils.mySprite.getX()>=x2 && Utils.mySprite.getX()<=x1 && Utils.mySprite.getY() == y1 && Utils.mySprite.getY() == y2){
                     Utils.trainerFoundMe = true;
-                    firstLayer.discoveredByTrainer(x1,y1,Utils.spritePosX+Utils.tileSize,y1,trainerSprite);
+                    firstLayer.discoveredByTrainer(x1,y1,Utils.mySprite.getX()+Utils.tileSize,y1,trainerSprite);
                     Log.d("FOUND","found!");
                 }
                 break;
             case "right":
-                if(Utils.spritePosX>=x1 && Utils.spritePosX<=x2 && Utils.spritePosY == y1 && Utils.spritePosY == y2){
+                if(Utils.mySprite.getX()>=x1 && Utils.mySprite.getX()<=x2 && Utils.mySprite.getY() == y1 && Utils.mySprite.getY() == y2){
                     Utils.trainerFoundMe = true;
-                    firstLayer.discoveredByTrainer(x1, y1,Utils.spritePosX-Utils.tileSize,y1,trainerSprite);
+                    firstLayer.discoveredByTrainer(x1, y1,Utils.mySprite.getX()-Utils.tileSize,y1,trainerSprite);
                     Log.d("FOUND","found!");
                 }
         }

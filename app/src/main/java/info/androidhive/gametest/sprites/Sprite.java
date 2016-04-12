@@ -42,6 +42,7 @@ public class Sprite {
         this.height = height;
         this.id = id;
         this.context = context;
+        this.location = location;
         //setBitmap(type,status);
     }
 
@@ -95,6 +96,7 @@ public class Sprite {
 
     public void draw(Canvas canvas){
         //Log.d("SpriteScroll",scrollX+","+scrollY);
+        //if(!getName().startsWith())
         canvas.drawBitmap(bitmap, x-width-scrollX, y-height-scrollY, null);
     }
 

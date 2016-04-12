@@ -23,9 +23,7 @@ import info.androidhive.gametest.sprites.Sprite;
  * Created by matthias on 3/20/2016.
  */
 public class BuildingInsideFirstLayer extends FirstLayer{
-    //private Sprite helpingPerson;
     private SurfaceView mParent;
-    private List<Sprite> sprites = new ArrayList<>();
     private String buildingName;
     private String welcomeMessage = "";
     private String interactionMessage = "";
@@ -35,25 +33,18 @@ public class BuildingInsideFirstLayer extends FirstLayer{
     private Paint paint;
     private String line1="";
 
-
-
     private int scrollX = 0;
     private int scrollY = 0;
 
     public BuildingInsideFirstLayer(SurfaceView view, String buildingName){
         this.buildingName = buildingName;
         mParent = view;
-//        if(buildingName.equals("pokecenter")) {
-//            addSprite(createSprite(R.drawable.nurse_1,9*Utils.tileSize-Utils.tileSize/2,7/2*Utils.tileSize,Utils.tileSize,Utils.tileSize*3/2));
-//        }
-//        else if(buildingName.equals("pokemarkt")){
-//            addSprite(createSprite(R.drawable.pokemarkt_seller,7*Utils.tileSize+Utils.tileSize/2,14/4*Utils.tileSize,Utils.tileSize,Utils.tileSize));
-//            Log.d("HELPER","helper");
-//        }
-        //sprites.put("nurseJoy",nurseJoy);
-        if(sprites!= null){
-            for(Sprite sprite : sprites){
-                sprite.update();
+
+
+        for(Sprite sprite : Utils.allSprites) {
+            if(sprite.getLocation().contains("Inside")) {
+                sprite.setScrollY(0);
+                sprite.setScrollX(0);
             }
         }
 
@@ -75,9 +66,10 @@ public class BuildingInsideFirstLayer extends FirstLayer{
 
     @Override
     public void draw(Canvas c) {
-        if(sprites!= null){
-            for(Sprite sprite : sprites){
-                sprite.draw(c);
+        for(Sprite sprite : Utils.allSprites) {
+            if(sprite.getLocation().contains("Inside")) {
+                if((buildingName.equals("pokecenter") && sprite.getName().equals("nurse")) || (buildingName.equals("pokemarkt") && sprite.getName().equals("seller")))
+                    sprite.draw(c);
             }
         }
 
@@ -131,9 +123,9 @@ public class BuildingInsideFirstLayer extends FirstLayer{
     @Override
     public void setScrollX(int scrollX) {
         this.scrollX = scrollX;
-        if(sprites!= null){
-            for(Sprite sprite : sprites){
-                sprite.setScrollX(sprites.get(0).getScrollX() + scrollX);
+        if(Utils.allSprites!= null){
+            for(int i=0;i<Utils.allSprites.size();i++){
+                Utils.allSprites.get(i).setScrollX(Utils.allSprites.get(i).getScrollX() + scrollX);
             }
         }
     }
@@ -146,31 +138,14 @@ public class BuildingInsideFirstLayer extends FirstLayer{
     @Override
     public void setScrollY(int scrollY) {
         this.scrollY = scrollY;
-        if(sprites!= null){
-            for(Sprite sprite : sprites){
-                sprite.setScrollY(sprites.get(0).getScrollY() + scrollY);
+        if(Utils.allSprites!= null){
+            for(int i=0;i<Utils.allSprites.size();i++){
+                Utils.allSprites.get(i).setScrollY(Utils.allSprites.get(i).getScrollY() + scrollY);
             }
         }
     }
 
-//    public Sprite createSprite(int id,int x, int y, int desiredWidth, int desiredHeight){
-//        Bitmap a = BitmapFactory.decodeResource(mParent.getResources(), id);
-//        a = Bitmap.createScaledBitmap(a, desiredWidth, desiredHeight, false);
-//        return new Sprite(a, x,y,Utils.tileSize,Utils.tileSize,"inside");
-//    }
 
-    public List<Sprite> getSprites() {
-        return sprites;
-    }
-
-    @Override
-    public void addSprite(Sprite sprite) {
-        sprites.add(sprite);
-    }
-
-    public void setSprites(List<Sprite> sprites) {
-        this.sprites = sprites;
-    }
 
     public String getWelcomeMessage() {
         return welcomeMessage;

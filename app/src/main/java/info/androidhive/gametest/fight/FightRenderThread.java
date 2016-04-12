@@ -7,12 +7,14 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.animation.Animation;
 
 import java.util.Random;
 
+import info.androidhive.gametest.FightListener;
 import info.androidhive.gametest.abstractClasses.Background;
 import info.androidhive.gametest.abstractClasses.FirstLayer;
 import info.androidhive.gametest.abstractClasses.Foreground;
@@ -31,7 +33,7 @@ public class FightRenderThread extends Thread{
     private int           mWidth;
     private int           mHeight;
     private Renderable[]  mRenderables;
-    private FightRenderable fightRenderable;
+    public static FightRenderable fightRenderable;
     private FightBackground fightBackground;
     private boolean running;
     private Paint mPaint;
@@ -39,14 +41,14 @@ public class FightRenderThread extends Thread{
     private final boolean mDebugEnable = true; // flip me to see clip rect
 
 
-    public FightRenderThread(SurfaceHolder holder,SurfaceView view) {
+    public FightRenderThread(SurfaceHolder holder,SurfaceView view, FightListener fightListener) {
         mHolder = holder;
         Renderable[]  mRenderables = new Renderable[2];
 
-        fightRenderable = new FightRenderable(view,holder);
-        fightBackground = new FightBackground(view,holder);
 
+        fightBackground = new FightBackground(view,holder);
         mRenderables[0] = fightBackground;
+        fightRenderable = new FightRenderable(view,holder,fightListener);
         mRenderables[1] = fightRenderable;
 
         setmRenderables(mRenderables);

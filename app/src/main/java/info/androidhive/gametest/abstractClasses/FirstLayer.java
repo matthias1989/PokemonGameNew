@@ -18,9 +18,6 @@ abstract public class FirstLayer extends info.androidhive.gametest.abstractClass
 
     abstract public void setScrollY(int scrollY);
 
-    abstract public List<Sprite> getSprites();
-    abstract public void addSprite(Sprite sprite);
-    abstract public void setSprites(List<Sprite> sprites);
 
     public void setInteractionListener(InteractionListener interactionListener){
         this.interactionListener = interactionListener;

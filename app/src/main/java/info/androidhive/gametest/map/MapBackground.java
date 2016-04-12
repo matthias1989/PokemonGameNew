@@ -24,8 +24,8 @@ import static info.androidhive.gametest.R.drawable.log_screen;
 public class MapBackground extends Background
 {
 
-    private int scrollX = Utils.scrollCoords.get("scrollX");
-    private int scrollY = Utils.scrollCoords.get("scrollY");
+    private int scrollX = Utils.scrollX;
+    private int scrollY = Utils.scrollY;
     private SurfaceView mParent;
 
     private Bitmap logScreen;
@@ -78,7 +78,7 @@ public class MapBackground extends Background
     }
 
     public void setScrollX(int scrollX) {
-            this.scrollX = scrollX;
+        this.scrollX = scrollX;
     }
 
     public int getScrollY() {
