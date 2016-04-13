@@ -44,22 +44,29 @@ public class FightRenderable extends Renderable {
     private SurfaceHolder mHolder;
     private SurfaceView mView;
 
-    private boolean endOfEncounter = false;
+    private FightListener fightListener;
 
+    private boolean animationBusy = false;
+
+    // ANIMATION BEGINS
     private int x1;
     private int x2;
+    private int x3=0;
     private int ballMovementX;
     private int ballMovementY;
+    private int extraTime = 0;
+    private int strCounter =0;
+    private int strCounter4 =0;
+    private int timeCounter =0;
     private String strAppeared;
+    private String enemyGoPokemon;
     private String goPokemon;
     private String strAction;
-    private int strCounter =0;
+    private String enemyType = "";
+
+    // ATTACKING
     private int strCounter2=0;
-    private int timeCounter =0;           // loading start
-    private int timeCounter2 = 0;         // attacking
-    private int strCounter3=0;
-    private int timeCounter3 = 0;       // pokecatching
-    //public static boolean enemyPokemonLoaded = false;
+    private int timeCounter2 = 0;
     private String attackMessage1 = "";
     private String attackMessage2 = "";
     private PokemonSprite attacker1=null;
@@ -67,27 +74,30 @@ public class FightRenderable extends Renderable {
     private PokemonSprite enemyPokemon;
     private PokemonSprite myPokemon;
     private PokemonSprite currentAttacker;
-
     private Move enemyMove;
     private Move myMove;
     private String firstCritHitMessage="";
     private String secondCritHitMessage="";
 
-    private FightListener fightListener;
-    private int gainedExperience=0;
-    private String endBattleMessage = "";
-    private String endBattleStatus = "";
-    private String pokeballMessage = "";
-    private String continueFightingMessage = "";
-    private boolean pokemonChanged = false;
-    private boolean animationBusy = false;
+    private boolean myPokemonChanged = false;
+    private boolean enemyPokemonChanged = false;
 
-    private String enemyType = "";
+    // CATCHING
+    private int strCounter3=0;
+    private int timeCounter3 = 0;
+    private String pokeballMessage = "";
     private boolean ballToCatchThrown = false;
     private String pokemonCapturingState = "";
     private String pokemonCapturingMessage = "";
     private int shakeCounter = 0;
     private boolean enemyInBall = false;
+
+    // END OF BATTLE
+    private int gainedExperience=0;
+    private String endBattleMessage = "";
+    private String endBattleStatus = "";
+    private String continueFightingMessage = "";
+    private boolean endOfEncounter = false;
 
     public void setFightListener(FightListener fightListener) {
         this.fightListener = fightListener;
@@ -101,20 +111,17 @@ public class FightRenderable extends Renderable {
         x2 = 700;
         fightListener.fightRenderableLoaded(this);
         currentTime = SystemClock.elapsedRealtime();
-    }
 
-    public void setup(){
-        PokemonSprite enemyPokemon = FightActivity.enemyPokemon;
-        String id1 = "a"+enemyPokemon.getId();
-        int resID = mView.getResources().getIdentifier(id1, "drawable", mView.getContext().getPackageName());
-        Utils.enemyPokemonBm = BitmapFactory.decodeResource(mView.getResources(), resID);
-        Utils.enemyPokemonBm = Bitmap.createScaledBitmap(Utils.enemyPokemonBm, 350, 350, false);
+        strCounter = 0;
 
-        PokemonSprite myPokemon = Utils.mySprite.getMyPokemons().getMyPokemonByOrderNr(0);
-        String id2 = "a"+myPokemon.getId()+"_back";
-        resID = mView.getResources().getIdentifier(id2, "drawable", mView.getContext().getPackageName());
-        Utils.myPokemonBm = BitmapFactory.decodeResource(mView.getResources(), resID);
-        Utils.myPokemonBm = Bitmap.createScaledBitmap(Utils.myPokemonBm, 350, 350, false);
+        paint = new Paint();
+        paint.setColor(Color.BLACK);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextSize(35);
+
+        timeCounter = 0;
+        ballMovementX = 0;
+        ballMovementY = 0;
 
         Utils.enemyPlatform= BitmapFactory.decodeResource(mView.getResources(), battle_bg1_part2);
         Utils.enemyPlatform = Bitmap.createScaledBitmap(Utils.enemyPlatform, 600, 200, false);
@@ -175,25 +182,35 @@ public class FightRenderable extends Renderable {
         Utils.pokeball20 = Bitmap.createScaledBitmap(Utils.pokeball20, 60, 60, false);
         Utils.pokeball21 = BitmapFactory.decodeResource(mView.getResources(), R.drawable.pokeball21);
         Utils.pokeball21 = Bitmap.createScaledBitmap(Utils.pokeball21, 60, 60, false);
+    }
 
-        //fightInfoTxt = (TextView) mView.findViewById(R.id.fight_info_txt);
-        //fightInfoTxt = new TextView(mView.getContext());
+    public void setup(){
+
+
+        PokemonSprite myPokemon = Utils.mySprite.getMyPokemons().getMyPokemonByOrderNr(0);
+        String id2 = "a"+myPokemon.getId()+"_back";
+        int resID = mView.getResources().getIdentifier(id2, "drawable", mView.getContext().getPackageName());
+        Utils.myPokemonBm = BitmapFactory.decodeResource(mView.getResources(), resID);
+        Utils.myPokemonBm = Bitmap.createScaledBitmap(Utils.myPokemonBm, 350, 350, false);
+
+        Log.d("ENEMYPOKE",FightActivity.enemyPokemon.getId()+"");
+        PokemonSprite enemyPokemon = FightActivity.enemyPokemon;
+        String id1 = "a"+enemyPokemon.getId();
+        resID = mView.getResources().getIdentifier(id1, "drawable", mView.getContext().getPackageName());
+        Utils.enemyPokemonBm = BitmapFactory.decodeResource(mView.getResources(), resID);
+        Utils.enemyPokemonBm = Bitmap.createScaledBitmap(Utils.enemyPokemonBm, 350, 350, false);
+
+
         if(enemyType.equals("wild"))
             strAppeared = "A wild " + enemyPokemon.getName().toUpperCase() + " appeared !";
-        else
-            strAppeared = "You are challenged by "+enemyType;
+        else {
+            strAppeared = "You are challenged by " + enemyType.toUpperCase();
+            enemyGoPokemon = Utils.currentTrainer.getName().toUpperCase() + " choses " +FightActivity.enemyPokemon.getName().toUpperCase();
+        }
         goPokemon = "Go! "+myPokemon.getName().toUpperCase()+"!";
         strAction = "What will "+myPokemon.getName().toUpperCase()+ " do?";
-        strCounter = 0;
 
-        paint = new Paint();
-        paint.setColor(Color.BLACK);
-        paint.setStyle(Paint.Style.FILL);
-        paint.setTextSize(35);
 
-        timeCounter = 0;
-        ballMovementX = 0;
-        ballMovementY = 0;
     }
 
     @Override
@@ -224,50 +241,77 @@ public class FightRenderable extends Renderable {
 
     public void loadStartAnimation(Canvas c){
         c.drawBitmap(Utils.enemyPlatform, x1, 180, null);
-        if((timeCounter2==0 || timeCounter2>LENGTH_OF_ATTACK || currentAttacker==enemyPokemon)&& !endBattleStatus.equals("WON") && !enemyInBall) {
-            if(enemyType.equals("wild"))
+
+
+
+        if ((timeCounter2 == 0 || timeCounter2 > LENGTH_OF_ATTACK || currentAttacker == enemyPokemon) && !endBattleStatus.equals("WON") && !enemyInBall) {
+
+            if (enemyType.equals("wild") || timeCounter >= extraTime || myPokemonChanged) {
                 c.drawBitmap(Utils.enemyPokemonBm, x1 + 100, 40, null);
-            else if(!enemyType.equals("")){
-                c.drawBitmap(Utils.enemyTrainerFrontBm,x1 + 100,40,null);
+            } else if (!enemyType.equals("") && timeCounter == 0 && !enemyPokemonChanged) {
+                c.drawBitmap(Utils.enemyTrainerFrontBm, x1 + 100, 40, null);
             }
         }
         c.drawBitmap(Utils.myPlatform, x2, 450, null);
-        if(timeCounter<10)
-            c.drawBitmap(Utils.player1,x2+110,328,null);
+        if (timeCounter < 10 + extraTime && !enemyPokemonChanged)
+            c.drawBitmap(Utils.player1, x2 + 110, 328, null);
 
+        if(enemyPokemonChanged)
+            c.drawBitmap(Utils.myPokemonBm, x2 + 60, 290, null);
 
         if(x1 < 500){
             x1+=35;         // x1 goes from -250 to 500
             x2 -= 35;       // x2 goes from 700 to -50
         }
         else{
-            if(timeCounter<=40) {
-                if(!pokemonChanged)
+            if(timeCounter<=40 +extraTime) {
+                if(!myPokemonChanged && !enemyPokemonChanged && (extraTime==0||timeCounter==0))
                     c.drawText(strAppeared, 0, strCounter, 70, 690, paint);
 
-                if (strCounter < strAppeared.length()) {
+                if (strCounter < strAppeared.length() && !enemyPokemonChanged) {
                     strCounter++;
-                } else {       // after "a enemy ... has appeared"
-                    throwPokeballWithMyPokemonAnimation(c);
-                    timeCounter++;
+                }
+                else{
+                    if(extraTime!=0 && !myPokemonChanged) {
+                        c.drawText(enemyGoPokemon, 0, strCounter4, 70, 690, paint);
+                        if (strCounter4 < enemyGoPokemon.length())
+                            strCounter4++;
+                    }
+
+                    if(timeCounter < extraTime && !myPokemonChanged) {       // after "a enemy ... has appeared"
+                        enemyTrainerBeginMovement(c);
+                        timeCounter++;
+                    }
+                    else{
+                        if(!enemyPokemonChanged) {
+                            throwPokeballWithMyPokemonAnimation(c);
+                            timeCounter++;
+                        }
+                        else {
+                            timeCounter = 63 + extraTime;
+                            //strCounter=0;
+                        }
+                    }
                 }
 
             }
-            if(timeCounter>40){
-                if((timeCounter2==0 || timeCounter2>LENGTH_OF_ATTACK || currentAttacker==myPokemon) && !endBattleStatus.equals("LOST")){
+            if(timeCounter>40+extraTime){
+
+                if((timeCounter2==0 || timeCounter2>LENGTH_OF_ATTACK || currentAttacker==myPokemon) && !endBattleStatus.equals("LOST") && !enemyPokemonChanged){
                             c.drawBitmap(Utils.myPokemonBm, x2 + 60, 290, null);
                 }
 
-                if(timeCounter<63) {
+                if(timeCounter<63+extraTime) {
                     c.drawText(goPokemon, 0, strCounter, 70, 690, paint);
                     if (strCounter < goPokemon.length()) {
                         strCounter++;
                     }
                 }
-                else if(timeCounter==63)
+                else if(timeCounter==63+extraTime)
                     strCounter = 0;
 
                 else{
+                    Log.d("BLA",animationBusy+","+ballToCatchThrown+","+endOfEncounter);
                     if(!animationBusy && !ballToCatchThrown && !endOfEncounter) {
                         c.drawText(strAction, 0, strCounter, 70, 690, paint);
                         if (strCounter < strAction.length()) {
@@ -275,7 +319,7 @@ public class FightRenderable extends Renderable {
                         }
                     }
 
-                    if(timeCounter==80) {         // if animation is done
+                    if(timeCounter==80+extraTime) {         // if animation is done
                         fightListener.showActionButtons();
                     }
                 }
@@ -288,23 +332,41 @@ public class FightRenderable extends Renderable {
         }
     }
 
+    public void enemyTrainerBeginMovement(Canvas c){
+
+
+        if(timeCounter<15) {
+            c.drawBitmap(Utils.enemyTrainerFrontBm, x1 + 100 + x3, 40, null);
+            x3 += 20;
+
+        }
+        if(timeCounter<23 && timeCounter >5){
+            c.drawBitmap(Utils.pokeball11, x1 + 250, 250, null);
+        }
+        else if (timeCounter>=23){
+            c.drawBitmap(Utils.pokeball10, x1 + 250, 210, null);
+            endOfEncounter = false;
+        }
+
+    }
+
     public void throwPokeballWithMyPokemonAnimation(Canvas c){
-        if (timeCounter >= 10 && timeCounter < 12) c.drawBitmap(Utils.player2, x2 + 80, 328, null);
-        else if (timeCounter >= 12 && timeCounter < 14) c.drawBitmap(Utils.player3, x2 + 50, 328, null);
-        else if (timeCounter >= 14 && timeCounter < 16) c.drawBitmap(Utils.player4, x2 + 20, 328, null);
-        else if (timeCounter >= 16 && timeCounter < 18) c.drawBitmap(Utils.player5, x2 - 10, 328, null);
-        else if (timeCounter >= 18 && timeCounter < 20) c.drawBitmap(Utils.pokeball1, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
-        else if (timeCounter >= 20 && timeCounter < 22) c.drawBitmap(Utils.pokeball2, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
-        else if (timeCounter >= 22 && timeCounter < 24) c.drawBitmap(Utils.pokeball3, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
-        else if (timeCounter >= 24 && timeCounter < 26) c.drawBitmap(Utils.pokeball4, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
-        else if (timeCounter >= 26 && timeCounter < 28) c.drawBitmap(Utils.pokeball5, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
-        else if (timeCounter >= 28 && timeCounter < 30) c.drawBitmap(Utils.pokeball6, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
-        else if (timeCounter >= 30 && timeCounter < 32) c.drawBitmap(Utils.pokeball7, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
-        else if (timeCounter >= 32 && timeCounter < 34) c.drawBitmap(Utils.pokeball8, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
-        else if (timeCounter >= 34 && timeCounter < 36) c.drawBitmap(Utils.pokeball9, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
-        else if (timeCounter >= 36 && timeCounter < 38) c.drawBitmap(Utils.pokeball9, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
-        else if (timeCounter >= 38 && timeCounter < 40) c.drawBitmap(Utils.pokeball10, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
-        else if(timeCounter==40) strCounter = 0;
+        if (timeCounter >= 10+extraTime && timeCounter < 12+extraTime) c.drawBitmap(Utils.player2, x2 + 80, 328, null);
+        else if (timeCounter >= 12+extraTime && timeCounter < 14+extraTime) c.drawBitmap(Utils.player3, x2 + 50, 328, null);
+        else if (timeCounter >= 14+extraTime && timeCounter < 16+extraTime) c.drawBitmap(Utils.player4, x2 + 20, 328, null);
+        else if (timeCounter >= 16+extraTime && timeCounter < 18+extraTime) c.drawBitmap(Utils.player5, x2 - 10, 328, null);
+        else if (timeCounter >= 18+extraTime && timeCounter < 20+extraTime) c.drawBitmap(Utils.pokeball1, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
+        else if (timeCounter >= 20+extraTime && timeCounter < 22+extraTime) c.drawBitmap(Utils.pokeball2, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
+        else if (timeCounter >= 22+extraTime && timeCounter < 24+extraTime) c.drawBitmap(Utils.pokeball3, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
+        else if (timeCounter >= 24+extraTime && timeCounter < 26+extraTime) c.drawBitmap(Utils.pokeball4, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
+        else if (timeCounter >= 26+extraTime && timeCounter < 28+extraTime) c.drawBitmap(Utils.pokeball5, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
+        else if (timeCounter >= 28+extraTime && timeCounter < 30+extraTime) c.drawBitmap(Utils.pokeball6, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
+        else if (timeCounter >= 30+extraTime && timeCounter < 32+extraTime) c.drawBitmap(Utils.pokeball7, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
+        else if (timeCounter >= 32+extraTime && timeCounter < 34+extraTime) c.drawBitmap(Utils.pokeball8, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
+        else if (timeCounter >= 34+extraTime && timeCounter < 36+extraTime) c.drawBitmap(Utils.pokeball9, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
+        else if (timeCounter >= 36+extraTime && timeCounter < 38+extraTime) c.drawBitmap(Utils.pokeball9, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
+        else if (timeCounter >= 38+extraTime && timeCounter < 40+extraTime) c.drawBitmap(Utils.pokeball10, START_BALL_X+ballMovementX, START_BALL_Y+ballMovementY, null);
+        else if(timeCounter==40+extraTime) strCounter = 0;
 
         ballMovementX += 4;
         ballMovementY += 9;
@@ -526,25 +588,28 @@ public class FightRenderable extends Renderable {
     }
 
     private void loadEndAnimation(Canvas c){
+        Log.d("ENDBATTLE",endBattleMessage);
         if (!endBattleMessage.equals("") && attackMessage1.equals("") && attackMessage2.equals("")) {
             if(gainedExperience>0)
                 endBattleStatus = "WON";
             else
                 endBattleStatus = "LOST";
 
-            if(timeCounter2<50) {
+            if(timeCounter3<50) {
                 animationBusy = true;
                 c.drawText(endBattleMessage, 0, strCounter2, 70, 690, paint);
                 if (strCounter2 < endBattleMessage.length()) {
                     strCounter2++;
                 }
             }
-            else if(timeCounter2==50){
+            else if(timeCounter3==50){
                 fightListener.finishBattle(gainedExperience);
+                Log.d("END", "endofencounter1" + endOfEncounter);
                 endOfEncounter = true;
+                Log.d("END","endofencounter2"+endOfEncounter);
                 animationBusy = false;
             }
-            timeCounter2++;
+            timeCounter3++;
         }
     }
 
@@ -558,15 +623,16 @@ public class FightRenderable extends Renderable {
                 strCounter2++;
             }
             else{
-                Log.d("COUNTERS",strCounter2+","+timeCounter2);
-                if(timeCounter2==50){       // do this only once
-                    fightListener.switchPokemonAfterFainted();
-
-
+                if(timeCounter3==50){   // do this only once
+                    if(continueFightingMessage.startsWith("Do you"))
+                        fightListener.switchPokemonAfterFainted();
+                    else
+                        fightListener.enemySwitchesPokemonAfterFainted();
                 }
 
+
             }
-            timeCounter2++;
+            timeCounter3++;
 
 
         }
@@ -574,6 +640,8 @@ public class FightRenderable extends Renderable {
 
     public void startBattle(String enemyType,Context context){
         this.enemyType = enemyType;
+        if(!enemyType.equals("wild"))
+            extraTime = 30;
         if(!enemyType.equals("wild")) {
             String id = enemyType + "_frontanimation";
             int resID = context.getResources().getIdentifier(id, "drawable", context.getPackageName());
@@ -584,6 +652,8 @@ public class FightRenderable extends Renderable {
     }
 
     public void changePokemon(){
+        enemyPokemonChanged = false;
+        myPokemonChanged = true;
         continueFightingMessage ="";
         endBattleStatus = "";
         endOfEncounter = false;
@@ -602,12 +672,27 @@ public class FightRenderable extends Renderable {
         strAction = "What will "+myPokemon.getName().toUpperCase()+ " do?";
         strCounter = 0;
         timeCounter = 18;
-        pokemonChanged = true;
         ballMovementX =0;          // these 2 vars will be used to move the ball from a start loc to a next one
         ballMovementY =0;
 
         animationBusy = false;
 
+    }
+
+    public void enemyChangesPokemon(){
+        enemyPokemonChanged = true;
+        myPokemonChanged = false;
+        continueFightingMessage ="";
+        timeCounter2 = 0;
+        strCounter2 = 0;
+
+
+        setup();
+        strCounter = 0;
+        timeCounter = 10;
+        strCounter4 = 0;
+
+        animationBusy = false;
     }
 
     public void enemyAttacked(Move attack, PokemonSprite enemyPokemon, PokemonSprite myPokemon, boolean criticalHit){
@@ -718,27 +803,28 @@ public class FightRenderable extends Renderable {
     }
 
     public void youLost(){
-        endBattleMessage = myPokemon.getName().toUpperCase()+" fainted";
+        endBattleMessage = FightActivity.myCurrentPokemon.getName().toUpperCase()+" fainted";
         animationBusy = true;
 
     }
 
     public void showContinueFightingMessage(String whoHasToSwitch){
         // "me" or "enemy"
-
+        Log.d("END", "endofencounter" + endOfEncounter);
+        endBattleMessage = "";
+        endOfEncounter = false;
         if(whoHasToSwitch.equals("me")) {
             continueFightingMessage = "Do you want to select another pokémon?";
-            animationBusy = true;
-            timeCounter2 = 0;
-            strCounter2 = 0;
         }
         else{
-            endBattleStatus = "";
-            endOfEncounter = false;
-            animationBusy = false;
+           continueFightingMessage = "My enemy chooses another pokemon!";
+            endBattleStatus="";
         }
-        endBattleMessage = "";
+        animationBusy = true;
 
+        timeCounter3 = 0;
+        timeCounter2 = 0;
+        strCounter2 = 0;
     }
 
     private float calculateBallBonus(CustomItem ball){

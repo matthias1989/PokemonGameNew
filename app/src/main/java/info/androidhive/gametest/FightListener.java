@@ -14,4 +14,5 @@ public interface FightListener {
     void finishBattle(int gainedExperience);
     void pokemonCaptured(boolean captured);
     void switchPokemonAfterFainted();
+    void enemySwitchesPokemonAfterFainted();
 }
