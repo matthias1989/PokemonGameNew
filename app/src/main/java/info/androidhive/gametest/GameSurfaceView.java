@@ -74,8 +74,8 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     }
 
     public void pokemoncenterEntered(SurfaceHolder holder){
-        Utils.scrollCoords.put("scrollX",mThread.getBackground().getScrollX());
-        Utils.scrollCoords.put("scrollY",mThread.getBackground().getScrollY()+ Utils.tileSize);
+        Utils.scrollX = mThread.getBackground().getScrollX();
+        Utils.scrollY = mThread.getBackground().getScrollY();
         mThread.quit();
         mThread = new BuildingInsideRenderThread(holder,this,status,"pokecenter");   // change this after
         mThread.start();
@@ -84,8 +84,10 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     }
 
     public void pokemarktEntered(SurfaceHolder holder){
-        Utils.scrollCoords.put("scrollX",mThread.getBackground().getScrollX());
-        Utils.scrollCoords.put("scrollY",mThread.getBackground().getScrollY()+Utils.tileSize);
+//        Utils.scrollCoords.put("scrollX",mThread.getBackground().getScrollX());
+//        Utils.scrollCoords.put("scrollY",mThread.getBackground().getScrollY()+Utils.tileSize);
+        Utils.scrollX = mThread.getBackground().getScrollX();
+        Utils.scrollY = mThread.getBackground().getScrollY();
         mThread.quit();
         mThread = new BuildingInsideRenderThread(holder,this,status,"pokemarkt");
         mThread.start();

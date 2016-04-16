@@ -15,33 +15,41 @@ public class Move {
     private int learnedLevel;
     private int accuracy;
     private int priority;
-    private int effect_chance;
     private float criticalChance;
 
-    /*private int genId;
-    private int typeId;
+//    private int genId;
     private int targetId;
     private int damageClassId;
     private int effectId;
-    private int effectChance;*/
+    private int effectChance;
+    private int id;
 
 
 
 
-    // private Effect effect
+    private Effect effect;
 
 
-    public Move(String name, int power, int pp, int learnedLevel, int accuracy, int priority, int effect_chance,String typeId) {
+    public Move(int id,String name, int power, int pp, int learnedLevel, int accuracy, int priority, int effectChance,String typeId) {
+        this.id = id;
         this.name = name;
         this.power = power;
         this.pp = pp;
         this.learnedLevel = learnedLevel;
         this.accuracy = accuracy;
         this.priority = priority;
-        this.effect_chance = effect_chance;
+        this.effectChance = effectChance;
         this.type = typeId;
         setCurrentPp(pp);
         setCriticalChance();
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -109,13 +117,6 @@ public class Move {
         this.priority = priority;
     }
 
-    public int getEffect_chance() {
-        return effect_chance;
-    }
-
-    public void setEffect_chance(int effect_chance) {
-        this.effect_chance = effect_chance;
-    }
 
     public float getCriticalChance() {
         return criticalChance;
@@ -145,5 +146,45 @@ public class Move {
                 criticalChance = 12.5f;
             }
         }
+    }
+
+    public int getDamageClassId() {
+        return damageClassId;
+    }
+
+    public void setDamageClassId(int damageClassId) {
+        this.damageClassId = damageClassId;
+    }
+
+    public int getEffectId() {
+        return effectId;
+    }
+
+    public void setEffectId(int effectId) {
+        this.effectId = effectId;
+    }
+
+    public int getEffectChance() {
+        return effectChance;
+    }
+
+    public void setEffectChance(int effectChance) {
+        this.effectChance = effectChance;
+    }
+
+    public int getTargetId() {
+        return targetId;
+    }
+
+    public void setTargetId(int targetId) {
+        this.targetId = targetId;
+    }
+
+    public Effect getEffect() {
+        return effect;
+    }
+
+    public void setEffect(Effect effect) {
+        this.effect = effect;
     }
 }

@@ -15,4 +15,5 @@ public interface FightListener {
     void pokemonCaptured(boolean captured);
     void switchPokemonAfterFainted();
     void enemySwitchesPokemonAfterFainted();
+    void runAway();
 }

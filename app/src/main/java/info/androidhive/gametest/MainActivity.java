@@ -97,6 +97,8 @@ public class MainActivity extends Activity implements InteractionListener
 
         Utils.setupGame(this);
         DatabaseFileHandler.readSpriteInfo(this);
+
+        Log.d("BLA","test:"+Utils.ds.getPokemonByName("ivysaur").getEvolvedSpeciesId()+"");
     }
 
 

@@ -77,6 +77,7 @@ public class Utils {
     public static Bitmap floorTile;
     public static Bitmap grassA;
     public static Bitmap grassB;
+    public static Bitmap padTile;
     public static Bitmap exclamationMark;
 
     public static PokemonDataSource ds;
@@ -130,13 +131,13 @@ public class Utils {
 
 
         MyPokemons myPokemons = new MyPokemons();
-        PokemonSprite myPokemon1 = new PokemonSprite("pikachu",Utils.ds);       // pikachu lukt wel!!!
-        myPokemon1.setCurrentExperience(40000);
+        PokemonSprite myPokemon1 = new PokemonSprite("charmander",Utils.ds);       // pikachu lukt wel!!!
+        myPokemon1.setCurrentExperience(2500);
         myPokemon1.setCurrentHP(myPokemon1.getStats().getHp());
         myPokemons.addPokemon(myPokemon1);
 
-        PokemonSprite myPokemon2 = new PokemonSprite("charmander",Utils.ds);       // pikachu lukt wel!!!
-        myPokemon2.setCurrentExperience(200);
+        PokemonSprite myPokemon2 = new PokemonSprite("pikachu",Utils.ds);       // pikachu lukt wel!!!
+        myPokemon2.setCurrentExperience(40500);
         myPokemon2.setCurrentHP(myPokemon2.getStats().getHp());
         myPokemons.addPokemon(myPokemon2);
 

@@ -26,11 +26,15 @@ public class PokemonSprite extends Pokemon implements Serializable  {
     private String UID;         // ofwel via timestamp, ofwel zelf opbouwen
     private int level=0;
     private int currentExperience;
+    private String nextEvolutionPokemonName;
+    private int nextEvolutionLevel;
     private int currentHP;
     private int experienceNeededForNextLevel;
     private int experienceNeededForThisLevel;
     private ArrayList<Move> learnedMoves = new ArrayList<>();
     private PokemonDataSource ds;
+
+    private Stat tempStats;
 
 
     private Map<String,Integer> individualValues = new HashMap<>();
@@ -52,6 +56,12 @@ public class PokemonSprite extends Pokemon implements Serializable  {
         setIndividualValues();
         setType(ds.getPokemonByName(getName()).getType());
         setCaptureRate(ds.getPokemonByName(getName()).getCaptureRate());
+        //Log.d("BLA", ds.getPokemonByName(getName()).getEvolvedSpeciesId() + "");
+        if(ds.getPokemonByName(getName()).getEvolvedSpeciesId()!=0){
+            setEvolvedSpeciesId(ds.getPokemonByName(getName()).getEvolvedSpeciesId());
+        }
+        setNextEvolution();
+
 
     }
 
@@ -139,7 +149,7 @@ public class PokemonSprite extends Pokemon implements Serializable  {
         int gainedExperience= (int) ((a * t * b * e * wildPokemon.getLevel() * p * f *v)/ (7 * s));
         setCurrentExperience(getCurrentExperience()+gainedExperience);
 
-        Log.d("MAX_EXP",gainedExperience+"");
+        Log.d("MAX_EXP", gainedExperience + "");
         return gainedExperience;
     }
 
@@ -279,5 +289,40 @@ public class PokemonSprite extends Pokemon implements Serializable  {
                 break;
 
         }
+    }
+
+    public String getNextEvolutionPokemonName() {
+        return nextEvolutionPokemonName;
+    }
+
+    public void setNextEvolutionPokemonName(String nextEvolutionPokemonName) {
+        this.nextEvolutionPokemonName = nextEvolutionPokemonName;
+    }
+
+    public int getNextEvolutionLevel() {
+        return nextEvolutionLevel;
+    }
+
+    public void setNextEvolutionLevel(int nextEvolutionLevel) {
+        this.nextEvolutionLevel = nextEvolutionLevel;
+    }
+
+    private void setNextEvolution(){
+        Pokemon selectedPokemon = ds.getPokemonByName(getName());   // bv charmander (id1)
+        List<Pokemon> allPokemon = ds.getPokemons();
+        for(Pokemon currentPokemon: allPokemon){
+            if(currentPokemon.getEvolvedSpeciesId()==selectedPokemon.getId()){  // bv charmeleon
+                setNextEvolutionPokemonName(currentPokemon.getName());
+                setNextEvolutionLevel(currentPokemon.getMinimumLevelEvolution());
+            }
+        }
+    }
+
+    public Stat getTempStats() {
+        return tempStats;
+    }
+
+    public void setTempStats(Stat tempStats) {
+        this.tempStats = tempStats;
     }
 }

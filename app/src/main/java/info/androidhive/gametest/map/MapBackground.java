@@ -55,6 +55,9 @@ public class MapBackground extends Background
         Utils.grassB = BitmapFactory.decodeResource(view.getResources(), R.drawable.grass_b);
         Utils.grassB = Bitmap.createScaledBitmap(Utils.grassB, Utils.tileSize, Utils.tileSize, false);
 
+        Utils.padTile = BitmapFactory.decodeResource(view.getResources(), R.drawable.pad_tile);
+        Utils.padTile = Bitmap.createScaledBitmap(Utils.padTile, Utils.tileSize, Utils.tileSize, false);
+
 
         Utils.exclamationMark = BitmapFactory.decodeResource(view.getResources(), R.drawable.exclamation_mark);
         Utils.exclamationMark = Bitmap.createScaledBitmap(Utils.exclamationMark, Utils.tileSize, Utils.tileSize, false);
@@ -118,7 +121,8 @@ public class MapBackground extends Background
             if(is != null) {
                 while (is.available() > 0) {
                     c = (char) is.read();
-                    if (c == '-' || c == 'w' || c == 'f' || c == 'g' || c == 'G') {
+                    //if (c == '-' || c == 'w' || c == 'f' || c == 'g' || c == 'G' || c=='P') {
+                    if(c!='\n' && c!=' '){
                         matrix[i][j] = c;
                         j++;
                     }
@@ -175,6 +179,10 @@ public class MapBackground extends Background
                         break;
                     case 'G':
                         c.drawBitmap(Utils.grassB,x - scrollX, y - scrollY, null);
+                        x += Utils.tileSize;
+                        break;
+                    case 'P':
+                        c.drawBitmap(Utils.padTile,x-scrollX,y-scrollY,null);
                         x += Utils.tileSize;
                         break;
                     case '-':

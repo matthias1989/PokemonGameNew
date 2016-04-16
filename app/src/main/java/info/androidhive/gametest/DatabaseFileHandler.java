@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import info.androidhive.gametest.items.CustomItem;
@@ -21,6 +22,7 @@ import info.androidhive.gametest.items.Item;
 import info.androidhive.gametest.items.ItemDataSource;
 import info.androidhive.gametest.items.MyItems;
 import info.androidhive.gametest.items.PokemarktItemList;
+import info.androidhive.gametest.pokemons.Effect;
 import info.androidhive.gametest.pokemons.Move;
 import info.androidhive.gametest.pokemons.MyPokemons;
 import info.androidhive.gametest.pokemons.Pokemon;
@@ -38,8 +40,9 @@ public class DatabaseFileHandler {
 
     private static File textDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
+    private static List<Effect> effects;
     public static void readData(Context context){
-
+        getEffects(context);
 
         //File file = new File(textDir,"db_config.txt");
         Utils.ds = new PokemonDataSource();
@@ -54,23 +57,29 @@ public class DatabaseFileHandler {
                 String object[] = line.split("/");          // elke pokemon
                 for(int i =0;i<object.length;i++){
                     String data[] = object[i].split(";");      // elk attribuut (kolom) binnen pokemon
-                    String pokeId = data[0];
-                    String pokeName = data[1];
-                    String captureRate = data[2];
-                    int baseExp = Integer.parseInt(data[3]);
+                    Pokemon pokemon = new Pokemon(data[1]);
+                    pokemon.setId(Integer.parseInt(data[0]));
+                    pokemon.setCaptureRate(Integer.parseInt(data[2]));
+                    pokemon.setBaseExp(Integer.parseInt(data[3]));
 
-                    Pokemon pokemon = new Pokemon(pokeName);
-                    pokemon.setCaptureRate(Integer.parseInt(captureRate));
-                    pokemon.setId(Integer.parseInt(pokeId));
-                    pokemon.setBaseExp(baseExp);
+                    if(!data[5].equals("")) {
+                        pokemon.setEvolvedSpeciesId(Integer.parseInt(data[4]));
+                        pokemon.setEvolutionTriggerId(Integer.parseInt(data[5]));
+                        if (!data[6].equals("null"))
+                            pokemon.setTriggerEvolutionItemId(Integer.parseInt(data[6]));
+                        if (!data[7].equals("null"))
+                            pokemon.setMinimumLevelEvolution(Integer.parseInt(data[7]));
+                        //Log.d("BLA",pokemon.getId()+"=>"+pokemon.getEvolvedSpeciesId());
+                    }
 
-                    String types = data[4];
+                    //Log.d("BLA",pokemon.getId()+"=>"+pokemon.getEvolvedSpeciesId());
+                    String types = data[8];
                     String types_array[] = types.split(",");
                     for(String type : types_array) {
                         pokemon.addType(type);
                     }
 
-                    String experience = data[5];    // nog opsplitsen
+                    String experience = data[9];    // nog opsplitsen
                     String experience_array[] = experience.split(",");
                     Map<Integer,Integer> experienceMap = new HashMap<>();
                     for(String element : experience_array){
@@ -79,29 +88,35 @@ public class DatabaseFileHandler {
                     }
                     pokemon.setExperienceTable(experienceMap);
 
-                    String moves = data[6];         // nog opsplitsen
+                    String moves = data[10];         // nog opsplitsen
                     String moves_array[] = moves.split(",");
                     for(String element : moves_array){
                         String move_details[] = element.split("_");
-                        String name = move_details[0];
-                        String genId = move_details[1];
-                        String typeId = move_details[2];
-                        int power= (!move_details[3].equals("null") && !move_details[3].equals("")) ? Integer.parseInt(move_details[3]):0;
-                        int pp = (!move_details[4].equals("null")  && !move_details[4].equals("")) ? Integer.parseInt(move_details[4]):0;
-                        int accuracy = (!move_details[5].equals("null")  && !move_details[5].equals("")) ? Integer.parseInt(move_details[5]):0;
-                        int priority = (!move_details[6].equals("null")  && !move_details[6].equals("")) ? Integer.parseInt(move_details[6]):0;
-                        String targetId = move_details[7];
-                        String damageClassId = move_details[8];
-                        String effectId = move_details[9];
-                        int effectChance = (!move_details[10].equals("null")  && !move_details[10].equals("")) ? Integer.parseInt(move_details[10]):0;
-                        int moveLevel = (!move_details[11].equals("null") && !move_details[11].equals("")) ? Integer.parseInt(move_details[11]):0;
-                        Move move = new Move(name,power,pp,moveLevel,accuracy,priority,effectChance,typeId);
+                        int id = Integer.parseInt(move_details[0]);
+                        String name = move_details[1];
+                        String genId = move_details[2];
+                        String typeId = move_details[3];
+                        int power= (!move_details[4].equals("null") && !move_details[4].equals("")) ? Integer.parseInt(move_details[4]):0;
+                        int pp = (!move_details[5].equals("null")  && !move_details[5].equals("")) ? Integer.parseInt(move_details[5]):0;
+                        int accuracy = (!move_details[6].equals("null")  && !move_details[6].equals("")) ? Integer.parseInt(move_details[6]):0;
+                        int priority = (!move_details[7].equals("null")  && !move_details[7].equals("")) ? Integer.parseInt(move_details[7]):0;
+                        String targetId = move_details[8];
+                        String damageClassId = move_details[9];
+                        String effectId = move_details[10];
+                        int effectChance = (!move_details[11].equals("null")  && !move_details[11].equals("")) ? Integer.parseInt(move_details[11]):0;
+                        int moveLevel = (!move_details[12].equals("null") && !move_details[12].equals("")) ? Integer.parseInt(move_details[12]):0;
+                        Move move = new Move(id,name,power,pp,moveLevel,accuracy,priority,effectChance,typeId);
+                        move.setDamageClassId(Integer.parseInt(damageClassId));
+                        move.setEffectId(Integer.parseInt(effectId));
+                        move.setEffectChance(effectChance);
+                        move.setTargetId(Integer.parseInt(targetId));
+                        addEffect(move);
                         pokemon.addMove(move);
 
                     }
 
 
-                    String stats = data[7];
+                    String stats = data[11];
                     String statsArray[] = stats.split(",");
                     Stat stat = new Stat();
                     for(String element : statsArray){
@@ -302,6 +317,45 @@ public class DatabaseFileHandler {
         }
         catch (Exception e){
             e.printStackTrace();
+        }
+    }
+
+    private static void getEffects(Context context) {
+        effects = new ArrayList<>();
+        try {
+            InputStream is = context.getAssets().open("db_config_effects.txt");
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            String line;
+            while ((line = br.readLine()) != null) {
+                //Log.d("LINE", line);
+                String objects[] = line.split("//");
+                for(String row : objects) {
+                    String items[] = row.split(";");
+                    int id = Integer.parseInt(items[0]);
+                    String statId = items[1];
+                    String statChange = items[2];
+                    String effectProse = items[3];
+                    Effect effect = new Effect(id, effectProse);
+                    if (!statId.equals("")) {
+                        effect.setStatId(Integer.parseInt(statId));
+                        effect.setStatChange(Integer.parseInt(statChange));
+                    }
+                    effects.add(effect);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private static void addEffect(Move move){
+        //Log.d("BLA",move.getId()+"");
+        for(Effect effect : effects){
+            if(move.getId()==effect.getMoveId()){
+                move.setEffect(effect);
+            }
         }
     }
 }

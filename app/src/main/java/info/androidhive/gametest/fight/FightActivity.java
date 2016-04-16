@@ -1,6 +1,6 @@
 package info.androidhive.gametest.fight;
 
-import android.content.Context;
+import android.animation.ObjectAnimator;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -9,8 +9,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -24,18 +23,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import info.androidhive.gametest.DatabaseFileHandler;
 import info.androidhive.gametest.FightListener;
 import info.androidhive.gametest.R;
 import info.androidhive.gametest.Utils;
 import info.androidhive.gametest.items.CustomItem;
-import info.androidhive.gametest.map.MapForeground;
 import info.androidhive.gametest.pokemons.Move;
 import info.androidhive.gametest.pokemons.MyPokemons;
-import info.androidhive.gametest.pokemons.Pokemon;
 import info.androidhive.gametest.pokemons.PokemonSprite;
 import info.androidhive.gametest.pokemons.TypeEfficacy;
-import info.androidhive.gametest.sprites.MyAdapter;
 
 /**
  * Created by matthias on 3/14/2016.
@@ -47,7 +42,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
 
     private static FightSurfaceView surfaceView;
     private FrameLayout viewFightFrame;
-    private LinearLayout myBars;
+    private static LinearLayout myBars;
     private LinearLayout enemyBars;
     private RelativeLayout enemyInfoContainer;
     private RelativeLayout myInfoContainer;
@@ -58,6 +53,8 @@ public class FightActivity extends AppCompatActivity implements FightListener{
     private TextView myInfo2;
     private ProgressBar myHP;
     private ProgressBar myExp;
+    private int myCurrentHPProgress;
+    private int enemyCurrentHPProgress;
     private TextView lblMyCurrentHP;
     private TextView lblMyMaxHP;
 
@@ -74,7 +71,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
     private String enemyType;
     private static int enemyDamage;
     private static int myDamage;
-    private static boolean criticalHit = false;
+    public static boolean criticalHit = false;
 
     private boolean myAttackDone = false;
     private boolean enemyAttackDone = false;
@@ -113,11 +110,17 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         myInfoContainer = (RelativeLayout) findViewById(R.id.my_info_container);
         surfaceView = (FightSurfaceView) findViewById(R.id.surfaceView);
         surfaceView.setFightListener(this);
-        
 
+        int counter = 0;
+        while(counter<6) {
+            myCurrentPokemon = Utils.mySprite.getMyPokemons().getMyPokemonByOrderNr(counter);
+            if(myCurrentPokemon.getCurrentHP()>0)
+                break;
+            else
+                counter++;
+        }
+        myCurrentPokemon.setTempStats(myCurrentPokemon.getStats());
         myPokemonAtStart = Utils.mySprite.getMyPokemons().getMyPokemonByOrderNr(0);
-        
-        myCurrentPokemon = myPokemonAtStart;
 
     }
 
@@ -151,6 +154,8 @@ public class FightActivity extends AppCompatActivity implements FightListener{
                 //Log.d("POKE",enemyPokemon.getName());
             }
         }
+        enemyPokemon.setTempStats(enemyPokemon.getStats());
+        Log.d("ENEMY", enemyPokemon.getId() + "," + enemyPokemon.getEvolvedSpeciesId() + "");
 //        MyPokemons myPokemons = Utils.mySprite.getMyPokemons();
 //        myCurrentPokemon = myPokemons.getMyPokemonByOrderNr(0);
 
@@ -158,6 +163,8 @@ public class FightActivity extends AppCompatActivity implements FightListener{
 
     private void setupMyBars() {
         myBars.setVisibility(View.VISIBLE);
+
+
         myInfo = (TextView) findViewById(R.id.my_info);
         myInfo.setText(myCurrentPokemon.getName().toUpperCase());
 
@@ -169,7 +176,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
 
         myHP = (ProgressBar) findViewById(R.id.my_hp);
         myHP.setMax(myCurrentPokemon.getStats().getHp());
-        changeProgressBar(myCurrentPokemon.getCurrentHP(), myHP);
+        changeHPProgressBar(myCurrentPokemon.getCurrentHP(), myHP, true);
 
         lblMyCurrentHP = (TextView) findViewById(R.id.lbl_my_current_hp);
         lblMyCurrentHP.setText(myHP.getProgress() + " / " + myHP.getMax());
@@ -207,11 +214,14 @@ public class FightActivity extends AppCompatActivity implements FightListener{
 
         enemyHP = (ProgressBar) findViewById(R.id.enemy_hp);
         enemyHP.setMax(enemyPokemon.getStats().getHp());
-        changeProgressBar(enemyPokemon.getCurrentHP(), enemyHP);
+        changeHPProgressBar(enemyPokemon.getCurrentHP(), enemyHP, true);
     }
 
 
-    private void changeProgressBar(int newProgress, ProgressBar whoseHP){
+    private void changeHPProgressBar(int newProgress, ProgressBar whoseHP, boolean firstTime){
+
+        int currentProgress = whoseHP.getProgress();
+
         float progressPerc = newProgress*100/whoseHP.getMax()*1.0f;
         whoseHP.setProgress(0);
         Rect bounds = whoseHP.getProgressDrawable().getBounds();
@@ -222,6 +232,19 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         else
             whoseHP.setProgressDrawable(getResources().getDrawable(R.drawable.progressbar_low_hp));
         whoseHP.getProgressDrawable().setBounds(bounds);
+
+
+
+        if(firstTime && whoseHP.getProgress()==0)
+            whoseHP.setProgress(whoseHP.getMax());
+        else {
+
+            ObjectAnimator animation = ObjectAnimator.ofInt(whoseHP, "progress", currentProgress, newProgress);
+            animation.setDuration(1000); // 0.5 seconds
+            animation.setInterpolator(new DecelerateInterpolator());
+            animation.start();
+        }
+        //Log.d("BLA",whoseHP.getProgress()+"");
         whoseHP.setProgress(newProgress);
     }
 
@@ -258,9 +281,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
         run.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Utils.mySprite.getMyPokemons().setFirstPokemon(myPokemonAtStart.getName());
-                setResult(RESULT_CANCELED, getIntent().putExtra("FIGHT", "Run away"));
-                finish();
+                fightRenderable.runAway();
             }
         });
 
@@ -453,39 +474,35 @@ public class FightActivity extends AppCompatActivity implements FightListener{
 
         // instead of doing the attacks here, start the animations, which when they will end come back here and do the real damage
         if (currentMove.getPriority() > selectedMove.getPriority()) {       // first check the priority of the moves
-            myDamage = calculateDamage(currentMove, myCurrentPokemon, enemyPokemon);
+            myDamage = DamageDealing.doDamage(currentMove, myCurrentPokemon, enemyPokemon);
             surfaceView.getmThread().getFightRenderable().youAttacked(currentMove,myCurrentPokemon,enemyPokemon,criticalHit);
-            enemyDamage = calculateDamage(selectedMove, enemyPokemon, myCurrentPokemon);
-            didYouWin(enemyHP.getProgress()-myDamage);
-            if (enemyIsAlive)
+            enemyDamage = DamageDealing.doDamage(selectedMove, enemyPokemon, myCurrentPokemon);
+            if(enemyHP.getProgress() - myDamage >0)
                 surfaceView.getmThread().getFightRenderable().enemyAttacked(selectedMove, enemyPokemon, myCurrentPokemon, criticalHit);
 
         }
         else {
             if (currentMove.getPriority() < selectedMove.getPriority()) {
-                enemyDamage = calculateDamage(selectedMove, enemyPokemon, myCurrentPokemon);
+                enemyDamage = DamageDealing.doDamage(selectedMove, enemyPokemon, myCurrentPokemon);
                 surfaceView.getmThread().getFightRenderable().enemyAttacked(selectedMove, enemyPokemon, myCurrentPokemon, criticalHit);
-                myDamage = calculateDamage(currentMove, myCurrentPokemon, enemyPokemon);
-                didYouLose(myHP.getProgress()-enemyDamage);
-                if (youAreAlive)
+                myDamage = DamageDealing.doDamage(currentMove, myCurrentPokemon, enemyPokemon);
+                if(myHP.getProgress() - enemyDamage >0)
                     surfaceView.getmThread().getFightRenderable().youAttacked(currentMove, myCurrentPokemon,enemyPokemon,criticalHit);
             }
             else {
                 if (myCurrentPokemon.getStats().getSpeed() >= enemyPokemon.getStats().getSpeed()) {
-                    myDamage = calculateDamage(currentMove, myCurrentPokemon, enemyPokemon);
+                    myDamage = DamageDealing.doDamage(currentMove, myCurrentPokemon, enemyPokemon);
                     surfaceView.getmThread().getFightRenderable().youAttacked(currentMove, myCurrentPokemon,enemyPokemon,criticalHit);
-                    enemyDamage = calculateDamage(selectedMove, enemyPokemon, myCurrentPokemon);
-                    didYouWin(enemyHP.getProgress() - myDamage);
-                    if (enemyIsAlive)
+                    enemyDamage = DamageDealing.doDamage(selectedMove, enemyPokemon, myCurrentPokemon);
+                    if(enemyHP.getProgress() - myDamage >0)
                         surfaceView.getmThread().getFightRenderable().enemyAttacked(selectedMove, enemyPokemon, myCurrentPokemon, criticalHit);
 
                 }
                 else {
-                    enemyDamage = calculateDamage(selectedMove, enemyPokemon, myCurrentPokemon);
+                    enemyDamage = DamageDealing.doDamage(selectedMove, enemyPokemon, myCurrentPokemon);
                     surfaceView.getmThread().getFightRenderable().enemyAttacked(selectedMove, enemyPokemon, myCurrentPokemon, criticalHit);
-                    myDamage = calculateDamage(currentMove, myCurrentPokemon, enemyPokemon);
-                    didYouLose(myHP.getProgress()-enemyDamage);
-                    if (youAreAlive)
+                    myDamage = DamageDealing.doDamage(currentMove, myCurrentPokemon, enemyPokemon);
+                    if(myHP.getProgress() - enemyDamage >0)
                         surfaceView.getmThread().getFightRenderable().youAttacked(currentMove,myCurrentPokemon,enemyPokemon,criticalHit);
                 }
             }
@@ -494,73 +511,32 @@ public class FightActivity extends AppCompatActivity implements FightListener{
 
     private void youAttack(Move myMove){
 
-        changeProgressBar(enemyHP.getProgress() - myDamage, enemyHP);
+        changeHPProgressBar(enemyHP.getProgress() - myDamage, enemyHP, false);
         myMove.setCurrentPp(myMove.getCurrentPp() - 1);
         enemyPokemon.setCurrentHP(enemyHP.getProgress());
 
-        didYouWin(enemyHP.getProgress());
-
-
-    }
-
-    private void didYouWin(int hpEnemy){
-        if(hpEnemy<=0) {
-            int gainedExperience = myCurrentPokemon.addExperience(enemyPokemon, false, false, false, false, false);
+        if(enemyHP.getProgress()<=0) {
+            int gainedExperience = myCurrentPokemon.addExperience(enemyPokemon, isTrainer, false, false, false, false);
             surfaceView.getmThread().getFightRenderable().youWon(gainedExperience);
             enemyIsAlive = false;
-            myCurrentPokemon.setCurrentHP(myHP.getProgress());
-
-            // if trainer, he can select another pokemon
         }
+
     }
+
     private void enemyAttacks(Move selectedMove) {
-        changeProgressBar(myHP.getProgress() - enemyDamage, myHP);
+        changeHPProgressBar(myHP.getProgress() - enemyDamage, myHP,false);
         lblMyCurrentHP.setText(myHP.getProgress() + " / " + myHP.getMax());
         myCurrentPokemon.setCurrentHP(myHP.getProgress());
-        
-        didYouLose(myHP.getProgress());
-    }
 
-    private void didYouLose(int myHp2){
-        if(myHp2<=0){
+        if(myHP.getProgress()<=0){
             surfaceView.getmThread().getFightRenderable().youLost();
-            myCurrentPokemon.setCurrentHP(myHP.getProgress());
             youAreAlive = false;
-            // select other pokemon
         }
     }
 
-    public static int calculateDamage(Move move, PokemonSprite attacker, PokemonSprite target){
-        float damageFactor = calculateDamageFactor(move.getType(), target.getType());
-        int myDamage = (int) ((move.getPower() / 100.0) * attacker.getStats().getAttack() * damageFactor);
-        float critChance = move.getCriticalChance();
-        int randomNumber = r.nextInt(10001);
-        if(randomNumber<=critChance*100){
-            myDamage *= 2;
-            criticalHit = true;
-        }
-        else
-            criticalHit = false;
 
-        return myDamage;
-    }
 
-    public static float calculateDamageFactor(String damageTypeId,List<String> targetTypeIds){
-        List<TypeEfficacy> typeEfficacies = Utils.ds.getTypeEfficacies();
-        int damageFactor = 100;
-        int previousDamageFactor=-1;
-        for(TypeEfficacy typeEfficacy : typeEfficacies){
-            for(String targetTypeId : targetTypeIds) {
-                if (typeEfficacy.getDamageTypeId() == Integer.parseInt(damageTypeId) && typeEfficacy.getTargetTypeId() == Integer.parseInt(targetTypeId)){
-                    if(previousDamageFactor==-1 || previousDamageFactor==100){
-                        damageFactor = typeEfficacy.getDamageFactor();
-                        previousDamageFactor = damageFactor;
-                    }
-                }
-            }
-        }
-        return damageFactor/100.0f;
-    }
+
 
 
 
@@ -683,7 +659,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
                         ArrayList<Move> moves = enemyPokemon.getLearnedMoves();
                         int randomMove = r.nextInt(moves.size());
                         Move selectedMove = moves.get(randomMove);
-                        enemyDamage = calculateDamage(selectedMove, enemyPokemon, myCurrentPokemon);
+                        enemyDamage = DamageDealing.doDamage(selectedMove, enemyPokemon, myCurrentPokemon);
                         surfaceView.getmThread().getFightRenderable().enemyAttacked(selectedMove, enemyPokemon, myCurrentPokemon, criticalHit);
                     }
                 });
@@ -778,24 +754,28 @@ public class FightActivity extends AppCompatActivity implements FightListener{
 
     }
     public static void switchPokemon2(PokemonSprite currentPokemon,RelativeLayout container){
-        container.removeAllViewsInLayout();
-        container.setVisibility(View.INVISIBLE);
-        myAnimationFinished = false;
+        if(currentPokemon.getCurrentHP()>0) {
+            myBars.setVisibility(View.INVISIBLE);
+            myCurrentPokemon = currentPokemon;
+            myCurrentPokemon.setTempStats(myCurrentPokemon.getStats());
+            container.removeAllViewsInLayout();
+            container.setVisibility(View.INVISIBLE);
+            myAnimationFinished = false;
+            Utils.mySprite.getMyPokemons().setFirstPokemon(currentPokemon.getName());
+            Utils.menuOpened = false;
+            surfaceView.getmThread().getFightRenderable().changePokemon();
 
-        Utils.mySprite.getMyPokemons().setFirstPokemon(currentPokemon.getName());
-        Utils.menuOpened = false;
-        surfaceView.getmThread().getFightRenderable().changePokemon();
+            // als geswitcht tijdens het gevecht, laat enemy aanvallen
+            if (switchedDuringFight) {
+                ArrayList<Move> moves = enemyPokemon.getLearnedMoves();
+                int randomMove = r.nextInt(moves.size());
+                Move selectedMove = moves.get(randomMove);
+                enemyDamage = DamageDealing.doDamage(selectedMove, enemyPokemon, myCurrentPokemon);
+                surfaceView.getmThread().getFightRenderable().enemyAttacked(selectedMove, enemyPokemon, myCurrentPokemon, criticalHit);
+            }
 
-        // als geswitcht tijdens het gevecht, laat enemy aanvallen
-        if(switchedDuringFight) {
-            ArrayList<Move> moves = enemyPokemon.getLearnedMoves();
-            int randomMove = r.nextInt(moves.size());
-            Move selectedMove = moves.get(randomMove);
-            enemyDamage = calculateDamage(selectedMove, enemyPokemon, myCurrentPokemon);
-            surfaceView.getmThread().getFightRenderable().enemyAttacked(selectedMove, enemyPokemon, myCurrentPokemon, criticalHit);
+            myCurrentPokemon = currentPokemon;
         }
-
-        myCurrentPokemon = currentPokemon;
 
 
     }
@@ -858,7 +838,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
     }
 
     public void finishBattle(int gainedExperience){
-
+        Log.d("BLA","finishBattle "+gainedExperience);
         // also add experience to all the pokemon that fought, not only the one who won (TO DO)
         if(gainedExperience>0) {
             myPokemonWon(gainedExperience);
@@ -871,11 +851,21 @@ public class FightActivity extends AppCompatActivity implements FightListener{
             finish();
         }
 
-
-
     }
 
     private void myPokemonWon(int gainedExperience){
+        if(myCurrentPokemon.getLevel()==myCurrentPokemon.getNextEvolutionLevel()){
+            PokemonSprite evolvedForm = new PokemonSprite(myCurrentPokemon.getNextEvolutionPokemonName(),Utils.ds);
+            Log.d("EVOLVE", myCurrentPokemon.getName() + " evolves in a " + myCurrentPokemon.getNextEvolutionPokemonName());
+            MyPokemons myPokemons = Utils.mySprite.getMyPokemons();
+            myPokemons.evolve(myCurrentPokemon,evolvedForm);
+            if(myPokemonAtStart==myCurrentPokemon)
+                myPokemonAtStart = evolvedForm;
+
+            myCurrentPokemon = evolvedForm;
+        }
+        myCurrentPokemon.setCurrentHP(myHP.getProgress());
+
         int counter = 0;
         if(isTrainer){
             for (Map.Entry<Integer, PokemonSprite> entry : Utils.currentTrainer.getMyPokemons().getMyPokemons().entrySet()) {
@@ -890,6 +880,7 @@ public class FightActivity extends AppCompatActivity implements FightListener{
                 @Override
                 public void run() {
                     fightButtonContainer.setVisibility(View.VISIBLE);
+                    enemyBars.setVisibility(View.INVISIBLE);
                     enemyIsAlive = true;
                     loadPokemons();
                     setupMyBars();
@@ -907,14 +898,22 @@ public class FightActivity extends AppCompatActivity implements FightListener{
 
     }
     private void myPokemonLost(){
+        myCurrentPokemon.setCurrentHP(myHP.getProgress());
         // myPokemon lost, possiblity to chose another pokemon (if there is still one alive
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                myBars.setVisibility(View.INVISIBLE);
+            }
+        });
         int counter = 0;
         for (Map.Entry<Integer, PokemonSprite> entry : Utils.mySprite.getMyPokemons().getMyPokemons().entrySet()) {
             if(entry.getValue().getCurrentHP()>0)
                 counter++;
         }
         if(counter>0) {
-            // DrawText: do you want to change pokemon ?
+            Log.d("NEXT","My next pokemon");
+
             surfaceView.getmThread().getFightRenderable().showContinueFightingMessage("me");
         }
         else {
@@ -961,6 +960,13 @@ public class FightActivity extends AppCompatActivity implements FightListener{
                 enemyIsAlive = true;
             }
         });
+    }
+
+    @Override
+    public void runAway() {
+        Utils.mySprite.getMyPokemons().setFirstPokemon(myPokemonAtStart.getName());
+        setResult(RESULT_CANCELED, getIntent().putExtra("FIGHT", "Run away"));
+        finish();
     }
 
 

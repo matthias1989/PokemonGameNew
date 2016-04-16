@@ -19,6 +19,11 @@ public class Pokemon implements Serializable {
     private int experience;
     private int captureRate;
     private int baseExp;
+    private int evolvedSpeciesId=0;
+    private int evolutionTriggerId=0;
+    private int triggerEvolutionItemId=0;
+    private int minimumLevelEvolution=0;
+
     private ArrayList<Move> moves = new ArrayList<>();
     private Map<Integer,Integer> experienceTable = new HashMap<>();
 
@@ -122,5 +127,35 @@ public class Pokemon implements Serializable {
         return getName();
     }
 
+    public int getEvolvedSpeciesId() {
+        return evolvedSpeciesId;
+    }
 
+    public void setEvolvedSpeciesId(int evolvedSpeciesId) {
+        this.evolvedSpeciesId = evolvedSpeciesId;
+    }
+
+    public int getEvolutionTriggerId() {
+        return evolutionTriggerId;
+    }
+
+    public void setEvolutionTriggerId(int evolutionTriggerId) {
+        this.evolutionTriggerId = evolutionTriggerId;
+    }
+
+    public int getTriggerEvolutionItemId() {
+        return triggerEvolutionItemId;
+    }
+
+    public void setTriggerEvolutionItemId(int triggerEvolutionItemId) {
+        this.triggerEvolutionItemId = triggerEvolutionItemId;
+    }
+
+    public int getMinimumLevelEvolution() {
+        return minimumLevelEvolution;
+    }
+
+    public void setMinimumLevelEvolution(int minimumLevelEvolution) {
+        this.minimumLevelEvolution = minimumLevelEvolution;
+    }
 }

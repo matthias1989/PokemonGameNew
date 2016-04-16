@@ -342,7 +342,7 @@ public class MapForeground extends Foreground
                     Utils.currentWildPokemon = new PokemonSprite("spearow",Utils.ds);
                 }
             }
-            Utils.currentWildPokemon.setCurrentExperience(810000);
+            Utils.currentWildPokemon.setCurrentExperience(100);
             Utils.currentWildPokemon.setCurrentHP(Utils.currentWildPokemon.getStats().getHp());
             //pokemonSprite.setLevel(38);
         }
